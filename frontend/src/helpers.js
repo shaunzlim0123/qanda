@@ -71,12 +71,23 @@ export function createLabeledInput(type, id, labelText) {
 }
 
 export function printErrorMessage(message, parentElement) {
-  const existing = document.getElementById("error-message");
+  const existing = document.getElementById("error-container");
   if (existing) existing.remove();
 
+  const errorContainer = document.createElement("div");
+  errorContainer.id = "error-container";
+
   const errorMsg = document.createElement("p");
-  errorMsg.id = "error-message";
   errorMsg.textContent = message;
-  errorMsg.style.color = "red";
-  parentElement.appendChild(errorMsg);
+
+  const errorClose = document.createElement("button");
+  errorClose.id = "error-close";
+  errorClose.textContent = "x";
+  errorClose.addEventListener("click", () => {
+    errorContainer.remove();
+  });
+
+  errorContainer.appendChild(errorMsg);
+  errorContainer.appendChild(errorClose);
+  parentElement.appendChild(errorContainer);
 }
