@@ -22,10 +22,13 @@ function navigateTo(page) {
     renderLoginPage();
   } else if (page === "register") {
     renderRegisterPage();
+  } else if (page === "dashboard") {
+    renderDashboardPage();
   }
 }
 
 function renderLoginPage() {
+  // Initial page rendering
   const form = document.createElement("div");
   form.classList.add("login-form");
 
@@ -47,6 +50,7 @@ function renderLoginPage() {
 
   main.appendChild(form);
 
+  // User Interaction
   document
     .getElementById("login-submit")
     .addEventListener("click", async () => {
@@ -54,7 +58,8 @@ function renderLoginPage() {
       const password = document.getElementById("login-password").value;
       try {
         const data = await apiCall("/auth/login", "POST", { email, password });
-        console.log(data);
+        localStorage.setItem("token", data.token);
+        navigateTo("dashboard");
       } catch (err) {
         printErrorMessage(err.message, form);
       }
@@ -67,7 +72,63 @@ function renderLoginPage() {
 }
 
 function renderRegisterPage() {
+  // Initial page rendering
+  const form = document.createElement("div");
+  form.classList.add("register-form");
+
+  form.appendChild(createLabeledInput("text", "register-email", "Email"));
+  form.appendChild(createLabeledInput("text", "register-name", "Name"));
+  form.appendChild(
+    createLabeledInput("password", "register-password", "Password"),
+  );
+  form.appendChild(
+    createLabeledInput(
+      "password",
+      "register-confirm-password",
+      "Confirm Password",
+    ),
+  );
+
+  const button = document.createElement("button");
+  button.id = "register-submit";
+  button.textContent = "Register";
+  form.appendChild(button);
+
+  main.appendChild(form);
+
+  // User Interaction
+  document
+    .getElementById("register-submit")
+    .addEventListener("click", async () => {
+      const password = document.getElementById("register-password").value;
+      const confirmPassword = document.getElementById(
+        "register-confirm-password",
+      ).value;
+
+      if (password !== confirmPassword) {
+        printErrorMessage("Passwords do not match.", form);
+        return;
+      }
+
+      const email = document.getElementById("register-email").value;
+      const name = document.getElementById("register-name").value;
+      try {
+        const data = await apiCall("/auth/register", "POST", {
+          email,
+          password,
+          name,
+        });
+        localStorage.setItem("token", data.token);
+        navigateTo("dashboard");
+      } catch (err) {
+        printErrorMessage(err.message, form);
+      }
+    });
 }
 
-// Start the app on the login page
-navigateTo("login");
+// Start the app on the login page, if already logged in go to dashboard page
+if (localStorage.getItem("token")) {
+  navigateTo("dashboard");
+} else {
+  navigateTo("login");
+}
