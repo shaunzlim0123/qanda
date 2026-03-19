@@ -16,6 +16,8 @@ function navigateTo(page) {
     renderLoginPage();
   } else if (page === "register") {
     renderRegisterPage();
+  } else if (page === "create-thread") {
+    renderCreateThreadPage();
   } else {
     renderAuthenticatedLayout(page);
   }
@@ -204,11 +206,64 @@ function renderAuthenticatedLayout(page) {
   });
 }
 
-// Dashboard content (blank for now per milestone 1)
+// Dashboard content (blank for now)
 function renderDashboardContent(content) {
   const heading = document.createElement("h2");
   heading.textContent = "Dashboard";
   content.appendChild(heading);
+}
+
+// Create thread - full page (excluding header)
+function renderCreateThreadPage() {
+  // Full-width form section
+  const section = document.createElement("section");
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Create Thread";
+  section.appendChild(heading);
+
+  const form = document.createElement("form");
+
+  const body = document.createElement("textarea");
+  body.id = "create-thread-body";
+
+  const submit = document.createElement("button");
+  submit.id = "create-thread-submit";
+  submit.type = "button";
+  submit.textContent = "Submit";
+
+  form.appendChild(createLabeledInput("text", "create-thread-title", "Title"));
+  form.appendChild(
+    createLabeledInput("checkbox", "create-thread-private", "Private Checkbox"),
+  );
+  form.appendChild(body);
+  form.appendChild(submit);
+
+  section.appendChild(form);
+
+  main.appendChild(section);
+
+  // User Interaction
+  document
+    .getElementById("create-thread-submit")
+    .addEventListener("click", () => {
+      const title = document.getElementById("create-thread-title").value;
+      const isPublic = !document.getElementById("create-thread-private")
+        .checked;
+      const content = document.getElementById("create-thread-body").value;
+      apiCall(
+        "/thread",
+        "POST",
+        { title, isPublic, content },
+        localStorage.getItem("token"),
+      )
+        .then(() => {
+          navigateTo("dashboard");
+        })
+        .catch((err) => {
+          printErrorMessage(err, section);
+        });
+    });
 }
 
 // Start the app on the login page, if already logged in go to dashboard page
