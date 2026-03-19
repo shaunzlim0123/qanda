@@ -211,15 +211,14 @@ function renderAuthenticatedLayout(page, data) {
   // Content area: changes per page
   contentArea = document.createElement("section");
   contentArea.classList.add("content-area");
-  const content = contentArea;
 
   if (page === "dashboard") {
-    renderDashboardContent(content);
+    renderDashboardContent(contentArea);
   } else if (page === "thread") {
-    renderThreadContent(data, content);
+    renderThreadContent(data, contentArea);
   }
 
-  body.appendChild(content);
+  body.appendChild(contentArea);
 
   wrapper.appendChild(body);
   main.appendChild(wrapper);
