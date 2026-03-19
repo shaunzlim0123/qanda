@@ -32,7 +32,7 @@ export function fileToDataUrl(file) {
 }
 
 // API CALL helper function
-export async function apiCall(path, method, body, token) {
+export const apiCall = (path, method, body, token) => {
   const headers = {
     "Content-Type": "application/json",
   };
@@ -44,22 +44,22 @@ export async function apiCall(path, method, body, token) {
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(
-    `http://localhost:${BACKEND_PORT}${path}`,
-    options,
-  );
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error);
-  }
-  return data;
-}
+  return fetch(`http://localhost:${BACKEND_PORT}${path}`, options)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.error) {
+        return Promise.reject(data.error);
+      }
+      return data;
+    });
+};
 
 export function createLabeledInput(type, id, labelText) {
   const container = document.createElement("div");
 
   const label = document.createElement("label");
   label.textContent = labelText;
+  label.setAttribute("for", id);
 
   const input = document.createElement("input");
   input.id = id;
