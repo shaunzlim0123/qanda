@@ -1,10 +1,4 @@
-import { BACKEND_PORT } from "./config.js";
-import {
-  fileToDataUrl,
-  createLabeledInput,
-  apiCall,
-  printErrorMessage,
-} from "./helpers.js";
+import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
 
 const main = document.querySelector("main");
 
@@ -22,14 +16,20 @@ function navigateTo(page) {
     renderLoginPage();
   } else if (page === "register") {
     renderRegisterPage();
-  } else if (page === "dashboard") {
-    renderDashboardPage();
+  } else {
+    renderAuthenticatedLayout(page);
   }
 }
 
 function renderLoginPage() {
   // Initial page rendering
-  const form = document.createElement("div");
+  const section = document.createElement("section");
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Login";
+  section.appendChild(heading);
+
+  const form = document.createElement("form");
   form.classList.add("login-form");
 
   form.appendChild(createLabeledInput("text", "login-email", "Email"));
@@ -39,31 +39,35 @@ function renderLoginPage() {
 
   const button = document.createElement("button");
   button.id = "login-submit";
+  button.type = "button";
   button.textContent = "Login";
   form.appendChild(button);
 
+  section.appendChild(form);
+
+  const nav = document.createElement("nav");
   const link = document.createElement("a");
   link.id = "register-link";
   link.textContent = "Don't have an account? Register";
   link.href = "#";
-  form.appendChild(link);
+  nav.appendChild(link);
+  section.appendChild(nav);
 
-  main.appendChild(form);
+  main.appendChild(section);
 
   // User Interaction
-  document
-    .getElementById("login-submit")
-    .addEventListener("click", async () => {
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
-      try {
-        const data = await apiCall("/auth/login", "POST", { email, password });
+  document.getElementById("login-submit").addEventListener("click", () => {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    apiCall("/auth/login", "POST", { email, password })
+      .then((data) => {
         localStorage.setItem("token", data.token);
         navigateTo("dashboard");
-      } catch (err) {
-        printErrorMessage(err.message, form);
-      }
-    });
+      })
+      .catch((err) => {
+        printErrorMessage(err, section);
+      });
+  });
 
   document.getElementById("register-link").addEventListener("click", (e) => {
     e.preventDefault();
@@ -73,7 +77,13 @@ function renderLoginPage() {
 
 function renderRegisterPage() {
   // Initial page rendering
-  const form = document.createElement("div");
+  const section = document.createElement("section");
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Register";
+  section.appendChild(heading);
+
+  const form = document.createElement("form");
   form.classList.add("register-form");
 
   form.appendChild(createLabeledInput("text", "register-email", "Email"));
@@ -91,39 +101,50 @@ function renderRegisterPage() {
 
   const button = document.createElement("button");
   button.id = "register-submit";
+  button.type = "button";
   button.textContent = "Register";
   form.appendChild(button);
 
-  main.appendChild(form);
+  section.appendChild(form);
+
+  const nav = document.createElement("nav");
+  const link = document.createElement("a");
+  link.id = "login-link";
+  link.textContent = "Already have an account? Login";
+  link.href = "#";
+  nav.appendChild(link);
+  section.appendChild(nav);
+
+  main.appendChild(section);
 
   // User Interaction
-  document
-    .getElementById("register-submit")
-    .addEventListener("click", async () => {
-      const password = document.getElementById("register-password").value;
-      const confirmPassword = document.getElementById(
-        "register-confirm-password",
-      ).value;
+  document.getElementById("login-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    navigateTo("login");
+  });
 
-      if (password !== confirmPassword) {
-        printErrorMessage("Passwords do not match.", form);
-        return;
-      }
+  document.getElementById("register-submit").addEventListener("click", () => {
+    const password = document.getElementById("register-password").value;
+    const confirmPassword = document.getElementById(
+      "register-confirm-password",
+    ).value;
 
-      const email = document.getElementById("register-email").value;
-      const name = document.getElementById("register-name").value;
-      try {
-        const data = await apiCall("/auth/register", "POST", {
-          email,
-          password,
-          name,
-        });
+    if (password !== confirmPassword) {
+      printErrorMessage("Passwords do not match.", section);
+      return;
+    }
+
+    const email = document.getElementById("register-email").value;
+    const name = document.getElementById("register-name").value;
+    apiCall("/auth/register", "POST", { email, password, name })
+      .then((data) => {
         localStorage.setItem("token", data.token);
         navigateTo("dashboard");
-      } catch (err) {
-        printErrorMessage(err.message, form);
-      }
-    });
+      })
+      .catch((err) => {
+        printErrorMessage(err, section);
+      });
+  });
 }
 
 // Start the app on the login page, if already logged in go to dashboard page
