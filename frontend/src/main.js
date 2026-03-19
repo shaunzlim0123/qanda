@@ -147,6 +147,70 @@ function renderRegisterPage() {
   });
 }
 
+// Shared layout for all authenticated pages
+function renderAuthenticatedLayout(page) {
+  const wrapper = document.createElement("div");
+  wrapper.id = "dashboard-container";
+
+  // Header with persistent buttons
+  const header = document.createElement("header");
+
+  const createBtn = document.createElement("button");
+  createBtn.id = "create-thread-button";
+  createBtn.type = "button";
+  createBtn.textContent = "Create";
+  header.appendChild(createBtn);
+
+  const logoutBtn = document.createElement("button");
+  logoutBtn.id = "logout-button";
+  logoutBtn.type = "button";
+  logoutBtn.textContent = "Logout";
+  header.appendChild(logoutBtn);
+
+  wrapper.appendChild(header);
+
+  // Main body: sidebar + content
+  const body = document.createElement("div");
+  body.classList.add("layout-body");
+
+  // Sidebar: thread list
+  const sidebar = document.createElement("aside");
+  sidebar.id = "thread-list-container";
+  body.appendChild(sidebar);
+
+  // Content area: changes per page
+  const content = document.createElement("section");
+  content.classList.add("content-area");
+
+  if (page === "dashboard") {
+    renderDashboardContent(content);
+  }
+
+  body.appendChild(content);
+
+  wrapper.appendChild(body);
+  main.appendChild(wrapper);
+
+  // Shared event listeners
+  document
+    .getElementById("create-thread-button")
+    .addEventListener("click", () => {
+      navigateTo("create-thread");
+    });
+
+  document.getElementById("logout-button").addEventListener("click", () => {
+    localStorage.removeItem("token");
+    navigateTo("login");
+  });
+}
+
+// Dashboard content (blank for now per milestone 1)
+function renderDashboardContent(content) {
+  const heading = document.createElement("h2");
+  heading.textContent = "Dashboard";
+  content.appendChild(heading);
+}
+
 // Start the app on the login page, if already logged in go to dashboard page
 if (localStorage.getItem("token")) {
   navigateTo("dashboard");
