@@ -9,9 +9,30 @@ function clearMain() {
   }
 }
 
+// Track whether authenticated layout is already rendered
+let contentArea = null;
+
 // Navigation: call the appropriate page function
-function navigateTo(page) {
+function navigateTo(page, data) {
+  // If layout exists and navigating between authenticated pages, only swap content
+  if (
+    contentArea &&
+    page !== "login" &&
+    page !== "register" &&
+    page !== "create-thread"
+  ) {
+    clearContent();
+    if (page === "dashboard") {
+      renderDashboardContent(contentArea);
+    } else if (page === "thread") {
+      renderThreadContent(data, contentArea);
+    }
+    return;
+  }
+
+  // Otherwise rebuild everything
   clearMain();
+  contentArea = null;
   if (page === "login") {
     renderLoginPage();
   } else if (page === "register") {
@@ -19,7 +40,13 @@ function navigateTo(page) {
   } else if (page === "create-thread") {
     renderCreateThreadPage();
   } else {
-    renderAuthenticatedLayout(page);
+    renderAuthenticatedLayout(page, data);
+  }
+}
+
+function clearContent() {
+  while (contentArea.firstChild) {
+    contentArea.removeChild(contentArea.firstChild);
   }
 }
 
@@ -150,7 +177,7 @@ function renderRegisterPage() {
 }
 
 // Shared layout for all authenticated pages
-function renderAuthenticatedLayout(page) {
+function renderAuthenticatedLayout(page, data) {
   const wrapper = document.createElement("div");
   wrapper.id = "dashboard-container";
 
@@ -182,11 +209,14 @@ function renderAuthenticatedLayout(page) {
   body.appendChild(sidebar);
 
   // Content area: changes per page
-  const content = document.createElement("section");
-  content.classList.add("content-area");
+  contentArea = document.createElement("section");
+  contentArea.classList.add("content-area");
+  const content = contentArea;
 
   if (page === "dashboard") {
     renderDashboardContent(content);
+  } else if (page === "thread") {
+    renderThreadContent(data, content);
   }
 
   body.appendChild(content);
@@ -207,7 +237,7 @@ function renderAuthenticatedLayout(page) {
   });
 }
 
-// Dashboard content (blank for now)
+// Dashboard content (blank when first logged in)
 function renderDashboardContent(content) {
   const heading = document.createElement("h2");
   heading.textContent = "Dashboard";
@@ -258,8 +288,8 @@ function renderCreateThreadPage() {
         { title, isPublic, content },
         localStorage.getItem("token"),
       )
-        .then(() => {
-          navigateTo("dashboard");
+        .then((data) => {
+          navigateTo("thread", data.id);
         })
         .catch((err) => {
           printErrorMessage(err, section);
@@ -286,7 +316,12 @@ function renderThreadList(sidebar) {
       .then((threadIds) => {
         // Fetch full thread details for each ID
         const threadPromises = threadIds.map((id) =>
-          apiCall(`/thread?id=${id}`, "GET", null, localStorage.getItem("token")),
+          apiCall(
+            `/thread?id=${id}`,
+            "GET",
+            null,
+            localStorage.getItem("token"),
+          ),
         );
         return Promise.all(threadPromises);
       })
@@ -329,6 +364,9 @@ function renderThreadList(sidebar) {
             threadBox.appendChild(date);
             threadBox.appendChild(author);
             threadBox.appendChild(likes);
+            threadBox.addEventListener("click", () => {
+              navigateTo("thread", thread.id);
+            });
             sidebar.insertBefore(threadBox, moreBtn);
           });
 
@@ -349,6 +387,47 @@ function renderThreadList(sidebar) {
 
   // Load more on button click
   moreBtn.addEventListener("click", loadThreads);
+}
+
+function renderThreadContent(threadId, content) {
+  const container = document.createElement("div");
+  container.id = "thread-container";
+
+  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
+    .then((thread) => {
+      return apiCall(
+        `/user?userId=${thread.creatorId}`,
+        "GET",
+        null,
+        localStorage.getItem("token"),
+      ).then((userData) => {
+        const title = document.createElement("h2");
+        title.id = "thread-title";
+        title.textContent = thread.title;
+
+        const author = document.createElement("p");
+        author.id = "thread-author";
+        author.textContent = userData.name;
+
+        const body = document.createElement("p");
+        body.id = "thread-body";
+        body.textContent = thread.content;
+
+        const likes = document.createElement("p");
+        likes.id = "thread-likes";
+        likes.textContent = thread.likes.length;
+
+        container.appendChild(title);
+        container.appendChild(author);
+        container.appendChild(body);
+        container.appendChild(likes);
+      });
+    })
+    .catch((err) => {
+      printErrorMessage(err, content);
+    });
+
+  content.appendChild(container);
 }
 
 // Start the app on the login page, if already logged in go to dashboard page
