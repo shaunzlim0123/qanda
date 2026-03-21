@@ -11,6 +11,7 @@ function clearMain() {
 
 // Track whether authenticated layout is already rendered
 let contentArea = null;
+let threadIDs = [];
 
 // Navigation: call the appropriate page function
 function navigateTo(page, data) {
@@ -337,6 +338,7 @@ function renderThreadList(sidebar) {
 
         return Promise.all(authorPromises).then((authors) => {
           threads.forEach((thread, index) => {
+            threadIDs.push(thread.id);
             const threadBox = document.createElement("article");
             threadBox.classList.add("list-thread-container");
             if (!thread.isPublic) {
@@ -382,6 +384,7 @@ function renderThreadList(sidebar) {
   }
 
   // Load initial batch
+  threadIDs.length = 0;
   loadThreads();
 
   // Load more on button click
@@ -399,28 +402,61 @@ function renderThreadContent(threadId, content) {
         "GET",
         null,
         localStorage.getItem("token"),
-      ).then((userData) => {
-        const title = document.createElement("h2");
-        title.id = "thread-title";
-        title.textContent = thread.title;
+      )
+        .then((userData) => {
+          const title = document.createElement("h2");
+          title.id = "thread-title";
+          title.textContent = thread.title;
 
-        const author = document.createElement("p");
-        author.id = "thread-author";
-        author.textContent = userData.name;
+          const author = document.createElement("p");
+          author.id = "thread-author";
+          author.textContent = userData.name;
 
-        const body = document.createElement("p");
-        body.id = "thread-body";
-        body.textContent = thread.content;
+          const body = document.createElement("p");
+          body.id = "thread-body";
+          body.textContent = thread.content;
 
-        const likes = document.createElement("p");
-        likes.id = "thread-likes";
-        likes.textContent = thread.likes.length;
+          const likes = document.createElement("p");
+          likes.id = "thread-likes";
+          likes.textContent = thread.likes.length;
 
-        container.appendChild(title);
-        container.appendChild(author);
-        container.appendChild(body);
-        container.appendChild(likes);
-      });
+          container.appendChild(title);
+          container.appendChild(author);
+          container.appendChild(body);
+          container.appendChild(likes);
+
+          // Verify if current user is the thread creator
+          const token = localStorage.getItem("token");
+          const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
+          if (thread.creatorId === Number(currentUserId)) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.id = "thread-delete-button";
+            deleteBtn.type = "button";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.addEventListener("click", () => {
+              apiCall(
+                "/thread",
+                "DELETE",
+                { id: threadId },
+                localStorage.getItem("token"),
+              ).then(() => {
+                const index = threadIDs.indexOf(threadId);
+                if (index !== -1) threadIDs.splice(index, 1);
+                contentArea = null;
+                if (threadIDs.length > 0) {
+                  navigateTo("thread", threadIDs[0]);
+                } else {
+                  navigateTo("dashboard");
+                }
+              });
+            });
+
+            container.appendChild(deleteBtn);
+          }
+        })
+        .catch((err) => {
+          printErrorMessage(err, container);
+        });
     })
     .catch((err) => {
       printErrorMessage(err, content);
