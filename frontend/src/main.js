@@ -429,6 +429,14 @@ function renderThreadContent(threadId, content) {
           const token = localStorage.getItem("token");
           const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
           if (thread.creatorId === Number(currentUserId)) {
+            const editBtn = document.createElement("button");
+            editBtn.id = "thread-edit-button";
+            editBtn.type = "button";
+            editBtn.textContent = "Edit";
+            editBtn.addEventListener("click", () => {
+              showEditThreadModal(threadId);
+            });
+
             const deleteBtn = document.createElement("button");
             deleteBtn.id = "thread-delete-button";
             deleteBtn.type = "button";
@@ -451,6 +459,7 @@ function renderThreadContent(threadId, content) {
               });
             });
 
+            container.appendChild(editBtn);
             container.appendChild(deleteBtn);
           }
         })
@@ -463,6 +472,88 @@ function renderThreadContent(threadId, content) {
     });
 
   content.appendChild(container);
+}
+
+function showEditThreadModal(threadId) {
+  // Backdrop covers entire screen
+  const backdrop = document.createElement("div");
+  backdrop.classList.add("modal-backdrop");
+
+  // Modal container (spec requires this ID)
+  const modal = document.createElement("div");
+  modal.id = "edit-thread-container";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Edit Thread";
+  modal.appendChild(heading);
+
+  const form = document.createElement("form");
+  form.appendChild(createLabeledInput("text", "edit-thread-title", "Title"));
+
+  const bodyTextarea = document.createElement("textarea");
+  bodyTextarea.id = "edit-thread-body";
+  form.appendChild(bodyTextarea);
+
+  form.appendChild(
+    createLabeledInput("checkbox", "edit-thread-private", "Private"),
+  );
+  form.appendChild(
+    createLabeledInput("checkbox", "edit-thread-locked", "Locked"),
+  );
+
+  const submitBtn = document.createElement("button");
+  submitBtn.id = "edit-thread-submit";
+  submitBtn.type = "button";
+  submitBtn.textContent = "Save";
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => {
+    backdrop.remove();
+  });
+
+  form.appendChild(submitBtn);
+  form.appendChild(cancelBtn);
+  modal.appendChild(form);
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+
+  // Pre-populate fields from current thread data
+  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
+    .then((thread) => {
+      document.getElementById("edit-thread-title").value = thread.title;
+      document.getElementById("edit-thread-body").value = thread.content;
+      document.getElementById("edit-thread-private").checked = !thread.isPublic;
+      document.getElementById("edit-thread-locked").checked = thread.lock;
+    })
+    .catch((err) => {
+      printErrorMessage(err, modal);
+    });
+
+  // User Interation
+  document
+    .getElementById("edit-thread-submit")
+    .addEventListener("click", () => {
+      const title = document.getElementById("edit-thread-title").value;
+      const isPublic = !document.getElementById("edit-thread-private").checked;
+      const content = document.getElementById("edit-thread-body").value;
+      const lock = document.getElementById("edit-thread-locked").checked;
+
+      apiCall(
+        "/thread",
+        "PUT",
+        { id: threadId, title, isPublic, content, lock },
+        localStorage.getItem("token"),
+      )
+        .then(() => {
+          backdrop.remove();
+          navigateTo("thread", threadId);
+        })
+        .catch((err) => {
+          printErrorMessage(err, modal);
+        });
+    });
 }
 
 // Start the app on the login page, if already logged in go to dashboard page
