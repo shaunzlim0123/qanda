@@ -425,18 +425,71 @@ function renderThreadContent(threadId, content) {
           container.appendChild(body);
           container.appendChild(likes);
 
-          // Verify if current user is the thread creator
+          // Current user identity
           const token = localStorage.getItem("token");
           const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
-          if (thread.creatorId === Number(currentUserId)) {
-            const editBtn = document.createElement("button");
-            editBtn.id = "thread-edit-button";
-            editBtn.type = "button";
-            editBtn.textContent = "Edit";
-            editBtn.addEventListener("click", () => {
-              showEditThreadModal(threadId);
-            });
+          const isCreator = thread.creatorId === Number(currentUserId);
 
+          // Actions hidden when thread is locked: edit, like
+          if (!thread.lock) {
+            if (isCreator || userData.admin) {
+              const editBtn = document.createElement("button");
+              editBtn.id = "thread-edit-button";
+              editBtn.type = "button";
+              editBtn.textContent = "Edit";
+              editBtn.addEventListener("click", () => {
+                showEditThreadModal(threadId);
+              });
+              container.appendChild(editBtn);
+            }
+
+            const likeBtn = document.createElement("button");
+            likeBtn.id = "thread-like-toggle";
+            likeBtn.type = "button";
+
+            const isLiked = thread.likes.includes(Number(currentUserId));
+            likeBtn.textContent = isLiked ? "♥" : "♡";
+            if (isLiked) likeBtn.classList.add("liked");
+
+            likeBtn.addEventListener("click", () => {
+              likeBtn.classList.toggle("liked");
+              likeBtn.textContent = likeBtn.classList.contains("liked")
+                ? "♥"
+                : "♡";
+
+              // increment/decrement the like count UI
+              const currentCount = Number(likes.textContent);
+              likes.textContent = likeBtn.classList.contains("liked")
+                ? currentCount + 1
+                : currentCount - 1;
+
+              apiCall(
+                "/thread/like",
+                "PUT",
+                {
+                  id: threadId,
+                  turnon: likeBtn.classList.contains("liked"),
+                },
+                localStorage.getItem("token"),
+              ).catch((err) => {
+                likeBtn.classList.toggle("liked");
+                likeBtn.textContent = likeBtn.classList.contains("liked")
+                  ? "♥"
+                  : "♡";
+
+                // increment/decrement the like count UI
+                const currentCount = Number(likes.textContent);
+                likes.textContent = likeBtn.classList.contains("liked")
+                  ? currentCount + 1
+                  : currentCount - 1;
+                printErrorMessage(err, container);
+              });
+            });
+            container.appendChild(likeBtn);
+          }
+
+          // Actions always visible: delete, watch
+          if (isCreator || userData.admin) {
             const deleteBtn = document.createElement("button");
             deleteBtn.id = "thread-delete-button";
             deleteBtn.type = "button";
@@ -458,10 +511,40 @@ function renderThreadContent(threadId, content) {
                 }
               });
             });
-
-            container.appendChild(editBtn);
             container.appendChild(deleteBtn);
           }
+
+          const watchBtn = document.createElement("button");
+          watchBtn.id = "thread-watch-toggle";
+          watchBtn.type = "button";
+
+          const isWatching = thread.watchees.includes(Number(currentUserId));
+          watchBtn.textContent = isWatching ? "Unwatch" : "Watch";
+          if (isWatching) watchBtn.classList.add("watching");
+
+          watchBtn.addEventListener("click", () => {
+            watchBtn.classList.toggle("watching");
+            watchBtn.textContent = watchBtn.classList.contains("watching")
+              ? "Unwatch"
+              : "Watch";
+
+            apiCall(
+              "/thread/watch",
+              "PUT",
+              {
+                id: threadId,
+                turnon: watchBtn.classList.contains("watching"),
+              },
+              localStorage.getItem("token"),
+            ).catch((err) => {
+              watchBtn.classList.toggle("watching");
+              watchBtn.textContent = watchBtn.classList.contains("watching")
+                ? "Unwatch"
+                : "Watch";
+              printErrorMessage(err, container);
+            });
+          });
+          container.appendChild(watchBtn);
         })
         .catch((err) => {
           printErrorMessage(err, container);
