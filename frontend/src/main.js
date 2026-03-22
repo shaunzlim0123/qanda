@@ -341,6 +341,7 @@ function renderThreadList(sidebar) {
             threadIDs.push(thread.id);
             const threadBox = document.createElement("article");
             threadBox.classList.add("list-thread-container");
+            threadBox.dataset.threadId = thread.id;
             if (!thread.isPublic) {
               threadBox.classList.add("thread-private");
             }
@@ -463,6 +464,12 @@ function renderThreadContent(threadId, content) {
                 ? currentCount + 1
                 : currentCount - 1;
 
+              // Update sidebar threads to reflect the like update
+              const sidebarLikes = document.querySelector(
+                `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
+              );
+              if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
+
               apiCall(
                 "/thread/like",
                 "PUT",
@@ -482,6 +489,12 @@ function renderThreadContent(threadId, content) {
                 likes.textContent = likeBtn.classList.contains("liked")
                   ? currentCount + 1
                   : currentCount - 1;
+
+                // Update sidebar threads to reflect the like update
+                const sidebarLikes = document.querySelector(
+                  `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
+                );
+                if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
                 printErrorMessage(err, container);
               });
             });
