@@ -30,3 +30,16 @@ body {
   max-height: 80vh;
   overflow-y: auto;
 }
+
+/* Like Toggle */
+#thread-like-toggle {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: gray;
+}
+
+#thread-like-toggle.liked {
+  color: red;
+}
