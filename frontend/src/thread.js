@@ -222,4 +222,102 @@ export function renderThreadContent(threadId, content, app) {
               );
               if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
 
-            
+              apiCall(
+                "/thread/like",
+                "PUT",
+                {
+                  id: threadId,
+                  turnon: likeBtn.classList.contains("liked"),
+                },
+                localStorage.getItem("token"),
+              ).catch((err) => {
+                likeBtn.classList.toggle("liked");
+                likeBtn.textContent = likeBtn.classList.contains("liked")
+                  ? "♥"
+                  : "♡";
+
+                // increment/decrement the like count UI
+                const currentCount = Number(likes.textContent);
+                likes.textContent = likeBtn.classList.contains("liked")
+                  ? currentCount + 1
+                  : currentCount - 1;
+
+                // Update sidebar threads to reflect the like update
+                const sidebarLikes = document.querySelector(
+                  `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
+                );
+                if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
+                printErrorMessage(err, container);
+              });
+            });
+            container.appendChild(likeBtn);
+          }
+
+          // Actions always visible: delete, watch
+          if (isCreator || userData.admin) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.id = "thread-delete-button";
+            deleteBtn.type = "button";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.addEventListener("click", () => {
+              apiCall(
+                "/thread",
+                "DELETE",
+                { id: threadId },
+                localStorage.getItem("token"),
+              ).then(() => {
+                const index = app.threadIDs.indexOf(threadId);
+                if (index !== -1) app.threadIDs.splice(index, 1);
+                app.contentArea = null;
+                if (app.threadIDs.length > 0) {
+                  app.navigateTo("thread", app.threadIDs[0]);
+                } else {
+                  app.navigateTo("dashboard");
+                }
+              });
+            });
+            container.appendChild(deleteBtn);
+          }
+
+          const watchBtn = document.createElement("button");
+          watchBtn.id = "thread-watch-toggle";
+          watchBtn.type = "button";
+
+          const isWatching = thread.watchees.includes(Number(currentUserId));
+          watchBtn.textContent = isWatching ? "Unwatch" : "Watch";
+          if (isWatching) watchBtn.classList.add("watching");
+
+          watchBtn.addEventListener("click", () => {
+            watchBtn.classList.toggle("watching");
+            watchBtn.textContent = watchBtn.classList.contains("watching")
+              ? "Unwatch"
+              : "Watch";
+
+            apiCall(
+              "/thread/watch",
+              "PUT",
+              {
+                id: threadId,
+                turnon: watchBtn.classList.contains("watching"),
+              },
+              localStorage.getItem("token"),
+            ).catch((err) => {
+              watchBtn.classList.toggle("watching");
+              watchBtn.textContent = watchBtn.classList.contains("watching")
+                ? "Unwatch"
+                : "Watch";
+              printErrorMessage(err, container);
+            });
+          });
+          container.appendChild(watchBtn);
+        })
+        .catch((err) => {
+          printErrorMessage(err, container);
+        });
+    })
+    .catch((err) => {
+      printErrorMessage(err, content);
+    });
+
+  content.appendChild(container);
+}
