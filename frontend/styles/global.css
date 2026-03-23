@@ -31,7 +31,7 @@ body {
   overflow-y: auto;
 }
 
-/* Like Toggle */
+/* Thread Like Toggle */
 #thread-like-toggle {
   background: none;
   border: none;
@@ -41,6 +41,19 @@ body {
 }
 
 #thread-like-toggle.liked {
+  color: red;
+}
+
+/* Comment Like Toggle */
+.thread-like-button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: gray;
+}
+
+.thread-like-button.liked {
   color: red;
 }
 
