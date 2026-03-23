@@ -1,4 +1,5 @@
 import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
+import { renderComments } from "./comments.js";
 
 export function renderCreateThreadPage(app) {
   const section = document.createElement("section");
@@ -310,6 +311,9 @@ export function renderThreadContent(threadId, content, app) {
             });
           });
           container.appendChild(watchBtn);
+
+          // Render comments section
+          renderComments(threadId, container, thread.lock);
         })
         .catch((err) => {
           printErrorMessage(err, container);
