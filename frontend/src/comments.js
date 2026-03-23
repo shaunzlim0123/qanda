@@ -63,6 +63,54 @@ export function renderComments(threadId, container) {
         const sortByNewest = (a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt);
         topLevel.sort(sortByNewest);
+
+        // Recursively render a comment and its children
+        function renderComment(comment, parentEl) {
+          const userData = userMap[comment.creatorId];
+
+          const commentBox = document.createElement("article");
+          commentBox.classList.add("list-comment-container");
+
+          const profilePic = document.createElement("img");
+          profilePic.classList.add("list-comment-profile");
+          profilePic.src = userData.image;
+          profilePic.alt = userData.name;
+
+          const authorName = document.createElement("p");
+          authorName.classList.add("list-comment-author");
+          authorName.textContent = userData.name;
+
+          const body = document.createElement("p");
+          body.classList.add("list-comment-body");
+          body.textContent = comment.content;
+
+          const date = document.createElement("p");
+          date.classList.add("list-comment-date");
+          date.textContent = formatTimeSince(comment.createdAt);
+
+          const likes = document.createElement("p");
+          likes.classList.add("list-comment-likes");
+          likes.textContent = comment.likes.length;
+
+          commentBox.appendChild(profilePic);
+          commentBox.appendChild(authorName);
+          commentBox.appendChild(body);
+          commentBox.appendChild(date);
+          commentBox.appendChild(likes);
+
+          parentEl.appendChild(commentBox);
+
+          // Render nested children inside this comment
+          const children = childrenMap[comment.id] || [];
+          children.sort(sortByNewest);
+          children.forEach((child) => {
+            renderComment(child, commentBox);
+          });
+        }
+
+        topLevel.forEach((comment) => {
+          renderComment(comment, commentList);
+        });
       });
     })
     .catch((err) => {
