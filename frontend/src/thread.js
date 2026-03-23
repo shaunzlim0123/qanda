@@ -143,3 +143,83 @@ export function renderThreadList(sidebar, app) {
   // Load more on button click
   moreBtn.addEventListener("click", loadThreads);
 }
+
+export function renderThreadContent(threadId, content, app) {
+  const container = document.createElement("div");
+  container.id = "thread-container";
+
+  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
+    .then((thread) => {
+      return apiCall(
+        `/user?userId=${thread.creatorId}`,
+        "GET",
+        null,
+        localStorage.getItem("token"),
+      )
+        .then((userData) => {
+          const title = document.createElement("h2");
+          title.id = "thread-title";
+          title.textContent = thread.title;
+
+          const author = document.createElement("p");
+          author.id = "thread-author";
+          author.textContent = userData.name;
+
+          const body = document.createElement("p");
+          body.id = "thread-body";
+          body.textContent = thread.content;
+
+          const likes = document.createElement("p");
+          likes.id = "thread-likes";
+          likes.textContent = thread.likes.length;
+
+          container.appendChild(title);
+          container.appendChild(author);
+          container.appendChild(body);
+          container.appendChild(likes);
+
+          // Current user identity
+          const token = localStorage.getItem("token");
+          const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
+          const isCreator = thread.creatorId === Number(currentUserId);
+
+          // Actions hidden when thread is locked: edit, like
+          if (!thread.lock) {
+            if (isCreator || userData.admin) {
+              const editBtn = document.createElement("button");
+              editBtn.id = "thread-edit-button";
+              editBtn.type = "button";
+              editBtn.textContent = "Edit";
+              editBtn.addEventListener("click", () => {
+                showEditThreadModal(threadId, app);
+              });
+              container.appendChild(editBtn);
+            }
+
+            const likeBtn = document.createElement("button");
+            likeBtn.id = "thread-like-toggle";
+            likeBtn.type = "button";
+
+            const isLiked = thread.likes.includes(Number(currentUserId));
+            likeBtn.textContent = isLiked ? "♥" : "♡";
+            if (isLiked) likeBtn.classList.add("liked");
+
+            likeBtn.addEventListener("click", () => {
+              likeBtn.classList.toggle("liked");
+              likeBtn.textContent = likeBtn.classList.contains("liked")
+                ? "♥"
+                : "♡";
+
+              // increment/decrement the like count UI
+              const currentCount = Number(likes.textContent);
+              likes.textContent = likeBtn.classList.contains("liked")
+                ? currentCount + 1
+                : currentCount - 1;
+
+              // Update sidebar threads to reflect the like update
+              const sidebarLikes = document.querySelector(
+                `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
+              );
+              if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
+
+            
