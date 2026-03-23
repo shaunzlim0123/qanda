@@ -50,3 +50,96 @@ export function renderCreateThreadPage(app) {
         });
     });
 }
+
+export function renderThreadList(sidebar, app) {
+  let start = 0;
+
+  const moreBtn = document.createElement("button");
+  moreBtn.id = "list-more-button";
+  moreBtn.type = "button";
+  moreBtn.textContent = "More";
+  sidebar.appendChild(moreBtn);
+
+  function loadThreads() {
+    apiCall(
+      `/threads?start=${start}`,
+      "GET",
+      null,
+      localStorage.getItem("token"),
+    )
+      .then((threadIds) => {
+        const threadPromises = threadIds.map((id) =>
+          apiCall(
+            `/thread?id=${id}`,
+            "GET",
+            null,
+            localStorage.getItem("token"),
+          ),
+        );
+        return Promise.all(threadPromises);
+      })
+      .then((threads) => {
+        const authorPromises = threads.map((thread) =>
+          apiCall(
+            `/user?userId=${thread.creatorId}`,
+            "GET",
+            null,
+            localStorage.getItem("token"),
+          ),
+        );
+
+        return Promise.all(authorPromises).then((authors) => {
+          threads.forEach((thread, index) => {
+            app.threadIDs.push(thread.id);
+            const threadBox = document.createElement("article");
+            threadBox.classList.add("list-thread-container");
+            threadBox.dataset.threadId = thread.id;
+            if (!thread.isPublic) {
+              threadBox.classList.add("thread-private");
+            }
+
+            const title = document.createElement("h3");
+            title.classList.add("list-thread-title");
+            title.textContent = thread.title;
+
+            const date = document.createElement("p");
+            date.classList.add("list-thread-date");
+            date.textContent = new Date(thread.createdAt).toLocaleDateString();
+
+            const author = document.createElement("p");
+            author.classList.add("list-thread-author");
+            author.textContent = authors[index].name;
+
+            const likes = document.createElement("p");
+            likes.classList.add("list-thread-likes");
+            likes.textContent = thread.likes.length;
+
+            threadBox.appendChild(title);
+            threadBox.appendChild(date);
+            threadBox.appendChild(author);
+            threadBox.appendChild(likes);
+            threadBox.addEventListener("click", () => {
+              app.navigateTo("thread", thread.id);
+            });
+            sidebar.insertBefore(threadBox, moreBtn);
+          });
+
+          start += 5;
+
+          if (threads.length < 5) {
+            moreBtn.remove();
+          }
+        });
+      })
+      .catch((err) => {
+        printErrorMessage(err, sidebar);
+      });
+  }
+
+  // Load initial batch
+  app.threadIDs.length = 0;
+  loadThreads();
+
+  // Load more on button click
+  moreBtn.addEventListener("click", loadThreads);
+}
