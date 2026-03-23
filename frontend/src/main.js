@@ -1,188 +1,66 @@
-import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
+import { renderLoginPage, renderRegisterPage } from "./auth.js";
+import {
+  renderCreateThreadPage,
+  renderThreadList,
+  renderThreadContent,
+} from "./thread.js";
 
-const main = document.querySelector("main");
+// Shared app state
+const app = {
+  main: document.querySelector("main"),
+  contentArea: null,
+  threadIDs: [],
+  navigateTo: null,
+};
 
-// Clears the main content area
 function clearMain() {
-  while (main.firstChild) {
-    main.removeChild(main.firstChild);
+  while (app.main.firstChild) {
+    app.main.removeChild(app.main.firstChild);
   }
 }
 
-// Track whether authenticated layout is already rendered
-let contentArea = null;
-let threadIDs = [];
+function clearContent() {
+  while (app.contentArea.firstChild) {
+    app.contentArea.removeChild(app.contentArea.firstChild);
+  }
+}
 
 // Navigation: call the appropriate page function
 function navigateTo(page, data) {
-  // If layout exists and navigating between authenticated pages, only swap content
   if (
-    contentArea &&
+    app.contentArea &&
     page !== "login" &&
     page !== "register" &&
     page !== "create-thread"
   ) {
     clearContent();
     if (page === "dashboard") {
-      renderDashboardContent(contentArea);
+      renderDashboardContent(app.contentArea);
     } else if (page === "thread") {
-      renderThreadContent(data, contentArea);
+      renderThreadContent(data, app.contentArea, app);
     }
     return;
   }
 
-  // Otherwise rebuild everything
   clearMain();
-  contentArea = null;
+  app.contentArea = null;
   if (page === "login") {
-    renderLoginPage();
+    renderLoginPage(app);
   } else if (page === "register") {
-    renderRegisterPage();
+    renderRegisterPage(app);
   } else if (page === "create-thread") {
-    renderCreateThreadPage();
+    renderCreateThreadPage(app);
   } else {
     renderAuthenticatedLayout(page, data);
   }
 }
-
-function clearContent() {
-  while (contentArea.firstChild) {
-    contentArea.removeChild(contentArea.firstChild);
-  }
-}
-
-function renderLoginPage() {
-  // Initial page rendering
-  const section = document.createElement("section");
-
-  const heading = document.createElement("h2");
-  heading.textContent = "Login";
-  section.appendChild(heading);
-
-  const form = document.createElement("form");
-  form.classList.add("login-form");
-
-  form.appendChild(createLabeledInput("text", "login-email", "Email"));
-  form.appendChild(
-    createLabeledInput("password", "login-password", "Password"),
-  );
-
-  const button = document.createElement("button");
-  button.id = "login-submit";
-  button.type = "button";
-  button.textContent = "Login";
-  form.appendChild(button);
-
-  section.appendChild(form);
-
-  const nav = document.createElement("nav");
-  const link = document.createElement("a");
-  link.id = "register-link";
-  link.textContent = "Don't have an account? Register";
-  link.href = "#";
-  nav.appendChild(link);
-  section.appendChild(nav);
-
-  main.appendChild(section);
-
-  // User Interaction
-  document.getElementById("login-submit").addEventListener("click", () => {
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-    apiCall("/auth/login", "POST", { email, password })
-      .then((data) => {
-        localStorage.setItem("token", data.token);
-        navigateTo("dashboard");
-      })
-      .catch((err) => {
-        printErrorMessage(err, section);
-      });
-  });
-
-  document.getElementById("register-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    navigateTo("register");
-  });
-}
-
-function renderRegisterPage() {
-  // Initial page rendering
-  const section = document.createElement("section");
-
-  const heading = document.createElement("h2");
-  heading.textContent = "Register";
-  section.appendChild(heading);
-
-  const form = document.createElement("form");
-  form.classList.add("register-form");
-
-  form.appendChild(createLabeledInput("text", "register-email", "Email"));
-  form.appendChild(createLabeledInput("text", "register-name", "Name"));
-  form.appendChild(
-    createLabeledInput("password", "register-password", "Password"),
-  );
-  form.appendChild(
-    createLabeledInput(
-      "password",
-      "register-confirm-password",
-      "Confirm Password",
-    ),
-  );
-
-  const button = document.createElement("button");
-  button.id = "register-submit";
-  button.type = "button";
-  button.textContent = "Register";
-  form.appendChild(button);
-
-  section.appendChild(form);
-
-  const nav = document.createElement("nav");
-  const link = document.createElement("a");
-  link.id = "login-link";
-  link.textContent = "Already have an account? Login";
-  link.href = "#";
-  nav.appendChild(link);
-  section.appendChild(nav);
-
-  main.appendChild(section);
-
-  // User Interaction
-  document.getElementById("login-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    navigateTo("login");
-  });
-
-  document.getElementById("register-submit").addEventListener("click", () => {
-    const password = document.getElementById("register-password").value;
-    const confirmPassword = document.getElementById(
-      "register-confirm-password",
-    ).value;
-
-    if (password !== confirmPassword) {
-      printErrorMessage("Passwords do not match.", section);
-      return;
-    }
-
-    const email = document.getElementById("register-email").value;
-    const name = document.getElementById("register-name").value;
-    apiCall("/auth/register", "POST", { email, password, name })
-      .then((data) => {
-        localStorage.setItem("token", data.token);
-        navigateTo("dashboard");
-      })
-      .catch((err) => {
-        printErrorMessage(err, section);
-      });
-  });
-}
+app.navigateTo = navigateTo;
 
 // Shared layout for all authenticated pages
 function renderAuthenticatedLayout(page, data) {
   const wrapper = document.createElement("div");
   wrapper.id = "dashboard-container";
 
-  // Header with persistent buttons
   const header = document.createElement("header");
 
   const createBtn = document.createElement("button");
@@ -199,32 +77,28 @@ function renderAuthenticatedLayout(page, data) {
 
   wrapper.appendChild(header);
 
-  // Main body: sidebar + content
   const body = document.createElement("div");
   body.classList.add("layout-body");
 
-  // Sidebar: thread list
   const sidebar = document.createElement("aside");
   sidebar.id = "thread-list-container";
-  renderThreadList(sidebar);
+  renderThreadList(sidebar, app);
   body.appendChild(sidebar);
 
-  // Content area: changes per page
-  contentArea = document.createElement("section");
-  contentArea.classList.add("content-area");
+  app.contentArea = document.createElement("section");
+  app.contentArea.classList.add("content-area");
 
   if (page === "dashboard") {
-    renderDashboardContent(contentArea);
+    renderDashboardContent(app.contentArea);
   } else if (page === "thread") {
-    renderThreadContent(data, contentArea);
+    renderThreadContent(data, app.contentArea, app);
   }
 
-  body.appendChild(contentArea);
+  body.appendChild(app.contentArea);
 
   wrapper.appendChild(body);
-  main.appendChild(wrapper);
+  app.main.appendChild(wrapper);
 
-  // Shared event listeners
   document
     .getElementById("create-thread-button")
     .addEventListener("click", () => {
@@ -237,422 +111,13 @@ function renderAuthenticatedLayout(page, data) {
   });
 }
 
-// Dashboard content (blank when first logged in)
 function renderDashboardContent(content) {
   const heading = document.createElement("h2");
   heading.textContent = "Dashboard";
   content.appendChild(heading);
 }
 
-// Create thread - full page (excluding header)
-function renderCreateThreadPage() {
-  // Full-width form section
-  const section = document.createElement("section");
-
-  const heading = document.createElement("h2");
-  heading.textContent = "Create Thread";
-  section.appendChild(heading);
-
-  const form = document.createElement("form");
-
-  const body = document.createElement("textarea");
-  body.id = "create-thread-body";
-
-  const submit = document.createElement("button");
-  submit.id = "create-thread-submit";
-  submit.type = "button";
-  submit.textContent = "Submit";
-
-  form.appendChild(createLabeledInput("text", "create-thread-title", "Title"));
-  form.appendChild(
-    createLabeledInput("checkbox", "create-thread-private", "Private Checkbox"),
-  );
-  form.appendChild(body);
-  form.appendChild(submit);
-
-  section.appendChild(form);
-
-  main.appendChild(section);
-
-  // User Interaction
-  document
-    .getElementById("create-thread-submit")
-    .addEventListener("click", () => {
-      const title = document.getElementById("create-thread-title").value;
-      const isPublic = !document.getElementById("create-thread-private")
-        .checked;
-      const content = document.getElementById("create-thread-body").value;
-      apiCall(
-        "/thread",
-        "POST",
-        { title, isPublic, content },
-        localStorage.getItem("token"),
-      )
-        .then((data) => {
-          navigateTo("thread", data.id);
-        })
-        .catch((err) => {
-          printErrorMessage(err, section);
-        });
-    });
-}
-
-function renderThreadList(sidebar) {
-  let start = 0;
-
-  const moreBtn = document.createElement("button");
-  moreBtn.id = "list-more-button";
-  moreBtn.type = "button";
-  moreBtn.textContent = "More";
-  sidebar.appendChild(moreBtn);
-
-  function loadThreads() {
-    apiCall(
-      `/threads?start=${start}`,
-      "GET",
-      null,
-      localStorage.getItem("token"),
-    )
-      .then((threadIds) => {
-        // Fetch full thread details for each ID
-        const threadPromises = threadIds.map((id) =>
-          apiCall(
-            `/thread?id=${id}`,
-            "GET",
-            null,
-            localStorage.getItem("token"),
-          ),
-        );
-        return Promise.all(threadPromises);
-      })
-      .then((threads) => {
-        // Fetch all authors in parallel
-        const authorPromises = threads.map((thread) =>
-          apiCall(
-            `/user?userId=${thread.creatorId}`,
-            "GET",
-            null,
-            localStorage.getItem("token"),
-          ),
-        );
-
-        return Promise.all(authorPromises).then((authors) => {
-          threads.forEach((thread, index) => {
-            threadIDs.push(thread.id);
-            const threadBox = document.createElement("article");
-            threadBox.classList.add("list-thread-container");
-            threadBox.dataset.threadId = thread.id;
-            if (!thread.isPublic) {
-              threadBox.classList.add("thread-private");
-            }
-
-            const title = document.createElement("h3");
-            title.classList.add("list-thread-title");
-            title.textContent = thread.title;
-
-            const date = document.createElement("p");
-            date.classList.add("list-thread-date");
-            date.textContent = new Date(thread.createdAt).toLocaleDateString();
-
-            const author = document.createElement("p");
-            author.classList.add("list-thread-author");
-            author.textContent = authors[index].name;
-
-            const likes = document.createElement("p");
-            likes.classList.add("list-thread-likes");
-            likes.textContent = thread.likes.length;
-
-            threadBox.appendChild(title);
-            threadBox.appendChild(date);
-            threadBox.appendChild(author);
-            threadBox.appendChild(likes);
-            threadBox.addEventListener("click", () => {
-              navigateTo("thread", thread.id);
-            });
-            sidebar.insertBefore(threadBox, moreBtn);
-          });
-
-          start += 5;
-
-          if (threads.length < 5) {
-            moreBtn.remove();
-          }
-        });
-      })
-      .catch((err) => {
-        printErrorMessage(err, sidebar);
-      });
-  }
-
-  // Load initial batch
-  threadIDs.length = 0;
-  loadThreads();
-
-  // Load more on button click
-  moreBtn.addEventListener("click", loadThreads);
-}
-
-function renderThreadContent(threadId, content) {
-  const container = document.createElement("div");
-  container.id = "thread-container";
-
-  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
-    .then((thread) => {
-      return apiCall(
-        `/user?userId=${thread.creatorId}`,
-        "GET",
-        null,
-        localStorage.getItem("token"),
-      )
-        .then((userData) => {
-          const title = document.createElement("h2");
-          title.id = "thread-title";
-          title.textContent = thread.title;
-
-          const author = document.createElement("p");
-          author.id = "thread-author";
-          author.textContent = userData.name;
-
-          const body = document.createElement("p");
-          body.id = "thread-body";
-          body.textContent = thread.content;
-
-          const likes = document.createElement("p");
-          likes.id = "thread-likes";
-          likes.textContent = thread.likes.length;
-
-          container.appendChild(title);
-          container.appendChild(author);
-          container.appendChild(body);
-          container.appendChild(likes);
-
-          // Current user identity
-          const token = localStorage.getItem("token");
-          const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
-          const isCreator = thread.creatorId === Number(currentUserId);
-
-          // Actions hidden when thread is locked: edit, like
-          if (!thread.lock) {
-            if (isCreator || userData.admin) {
-              const editBtn = document.createElement("button");
-              editBtn.id = "thread-edit-button";
-              editBtn.type = "button";
-              editBtn.textContent = "Edit";
-              editBtn.addEventListener("click", () => {
-                showEditThreadModal(threadId);
-              });
-              container.appendChild(editBtn);
-            }
-
-            const likeBtn = document.createElement("button");
-            likeBtn.id = "thread-like-toggle";
-            likeBtn.type = "button";
-
-            const isLiked = thread.likes.includes(Number(currentUserId));
-            likeBtn.textContent = isLiked ? "♥" : "♡";
-            if (isLiked) likeBtn.classList.add("liked");
-
-            likeBtn.addEventListener("click", () => {
-              likeBtn.classList.toggle("liked");
-              likeBtn.textContent = likeBtn.classList.contains("liked")
-                ? "♥"
-                : "♡";
-
-              // increment/decrement the like count UI
-              const currentCount = Number(likes.textContent);
-              likes.textContent = likeBtn.classList.contains("liked")
-                ? currentCount + 1
-                : currentCount - 1;
-
-              // Update sidebar threads to reflect the like update
-              const sidebarLikes = document.querySelector(
-                `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
-              );
-              if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
-
-              apiCall(
-                "/thread/like",
-                "PUT",
-                {
-                  id: threadId,
-                  turnon: likeBtn.classList.contains("liked"),
-                },
-                localStorage.getItem("token"),
-              ).catch((err) => {
-                likeBtn.classList.toggle("liked");
-                likeBtn.textContent = likeBtn.classList.contains("liked")
-                  ? "♥"
-                  : "♡";
-
-                // increment/decrement the like count UI
-                const currentCount = Number(likes.textContent);
-                likes.textContent = likeBtn.classList.contains("liked")
-                  ? currentCount + 1
-                  : currentCount - 1;
-
-                // Update sidebar threads to reflect the like update
-                const sidebarLikes = document.querySelector(
-                  `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
-                );
-                if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
-                printErrorMessage(err, container);
-              });
-            });
-            container.appendChild(likeBtn);
-          }
-
-          // Actions always visible: delete, watch
-          if (isCreator || userData.admin) {
-            const deleteBtn = document.createElement("button");
-            deleteBtn.id = "thread-delete-button";
-            deleteBtn.type = "button";
-            deleteBtn.textContent = "Delete";
-            deleteBtn.addEventListener("click", () => {
-              apiCall(
-                "/thread",
-                "DELETE",
-                { id: threadId },
-                localStorage.getItem("token"),
-              ).then(() => {
-                const index = threadIDs.indexOf(threadId);
-                if (index !== -1) threadIDs.splice(index, 1);
-                contentArea = null;
-                if (threadIDs.length > 0) {
-                  navigateTo("thread", threadIDs[0]);
-                } else {
-                  navigateTo("dashboard");
-                }
-              });
-            });
-            container.appendChild(deleteBtn);
-          }
-
-          const watchBtn = document.createElement("button");
-          watchBtn.id = "thread-watch-toggle";
-          watchBtn.type = "button";
-
-          const isWatching = thread.watchees.includes(Number(currentUserId));
-          watchBtn.textContent = isWatching ? "Unwatch" : "Watch";
-          if (isWatching) watchBtn.classList.add("watching");
-
-          watchBtn.addEventListener("click", () => {
-            watchBtn.classList.toggle("watching");
-            watchBtn.textContent = watchBtn.classList.contains("watching")
-              ? "Unwatch"
-              : "Watch";
-
-            apiCall(
-              "/thread/watch",
-              "PUT",
-              {
-                id: threadId,
-                turnon: watchBtn.classList.contains("watching"),
-              },
-              localStorage.getItem("token"),
-            ).catch((err) => {
-              watchBtn.classList.toggle("watching");
-              watchBtn.textContent = watchBtn.classList.contains("watching")
-                ? "Unwatch"
-                : "Watch";
-              printErrorMessage(err, container);
-            });
-          });
-          container.appendChild(watchBtn);
-        })
-        .catch((err) => {
-          printErrorMessage(err, container);
-        });
-    })
-    .catch((err) => {
-      printErrorMessage(err, content);
-    });
-
-  content.appendChild(container);
-}
-
-function showEditThreadModal(threadId) {
-  // Backdrop covers entire screen
-  const backdrop = document.createElement("div");
-  backdrop.classList.add("modal-backdrop");
-
-  // Modal container (spec requires this ID)
-  const modal = document.createElement("div");
-  modal.id = "edit-thread-container";
-
-  const heading = document.createElement("h2");
-  heading.textContent = "Edit Thread";
-  modal.appendChild(heading);
-
-  const form = document.createElement("form");
-  form.appendChild(createLabeledInput("text", "edit-thread-title", "Title"));
-
-  const bodyTextarea = document.createElement("textarea");
-  bodyTextarea.id = "edit-thread-body";
-  form.appendChild(bodyTextarea);
-
-  form.appendChild(
-    createLabeledInput("checkbox", "edit-thread-private", "Private"),
-  );
-  form.appendChild(
-    createLabeledInput("checkbox", "edit-thread-locked", "Locked"),
-  );
-
-  const submitBtn = document.createElement("button");
-  submitBtn.id = "edit-thread-submit";
-  submitBtn.type = "button";
-  submitBtn.textContent = "Save";
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.textContent = "Cancel";
-  cancelBtn.addEventListener("click", () => {
-    backdrop.remove();
-  });
-
-  form.appendChild(submitBtn);
-  form.appendChild(cancelBtn);
-  modal.appendChild(form);
-  backdrop.appendChild(modal);
-  document.body.appendChild(backdrop);
-
-  // Pre-populate fields from current thread data
-  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
-    .then((thread) => {
-      document.getElementById("edit-thread-title").value = thread.title;
-      document.getElementById("edit-thread-body").value = thread.content;
-      document.getElementById("edit-thread-private").checked = !thread.isPublic;
-      document.getElementById("edit-thread-locked").checked = thread.lock;
-    })
-    .catch((err) => {
-      printErrorMessage(err, modal);
-    });
-
-  // User Interation
-  document
-    .getElementById("edit-thread-submit")
-    .addEventListener("click", () => {
-      const title = document.getElementById("edit-thread-title").value;
-      const isPublic = !document.getElementById("edit-thread-private").checked;
-      const content = document.getElementById("edit-thread-body").value;
-      const lock = document.getElementById("edit-thread-locked").checked;
-
-      apiCall(
-        "/thread",
-        "PUT",
-        { id: threadId, title, isPublic, content, lock },
-        localStorage.getItem("token"),
-      )
-        .then(() => {
-          backdrop.remove();
-          navigateTo("thread", threadId);
-        })
-        .catch((err) => {
-          printErrorMessage(err, modal);
-        });
-    });
-}
-
-// Start the app on the login page, if already logged in go to dashboard page
+// Bootstrap
 if (localStorage.getItem("token")) {
   navigateTo("dashboard");
 } else {
