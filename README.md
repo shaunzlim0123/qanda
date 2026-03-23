@@ -1,5 +1,6 @@
 # Changelog
 2026.03.12: Update backend repo link
+2026.03.23: Update class name
 
 # Assessment 3 (HTML, CSS, Vanilla JS)
 
@@ -154,22 +155,22 @@ Milestone 4 focuses on commenting features once the threads have been made.
   * When the comment button is pressed, the text inside the text comment should be posted as a new comment for the thread at `POST /comment`.
 * If there are comments on the thread, an input/textarea box should appear but at the bottom of the comments instead. [`DOMElement` with id: `thread-comment-text`]
   * Underneath this box, a "Comment" button should exist  [`Button` with id: `thread-comment-submit`]
-* Each comment should have a "reply" text/button somewhere in the space that contains the comment info. [`DOMElement` with class: `thread-reply-button`]
-  * When this reply text/button is pressed, a modal [`DOMElement` with id: `thread-reply-container`] should appear that contains an input/textarea box [`DOMElement` with id: `thread-reply-text`] and a "comment" button. [`Button` with id: `thread-reply-submit`]
+* Each comment should have a "reply" text/button somewhere in the space that contains the comment info. [`DOMElement` with class: `comment-reply-button`]
+  * When this reply text/button is pressed, a modal [`DOMElement` with id: `comment-reply-container`] should appear that contains an input/textarea box [`DOMElement` with id: `comment-reply-text`] and a "comment" button. [`Button` with id: `comment-reply-submit`]
   * When the comment button is pressed, the text inside the text comment should be posted as a new comment for the thread at `POST /comment` and the modal should disappear.
 * Locked threads cannot have a new comment added to them, comment related elements should be hidden.
 
 #### 2.4.3. Editing a comment
 
 * Each comment should have an "edit" text/button [`DOMElement` with class: `comment-edit-button`] somewhere in the space that contains the comment info [`DOMElement` with class: `list-comment-container`].
-* When this edit text/button is pressed, a modal [`DOMElement` with id: `thread-edit-container`] should appear that contains an input/textarea box [`DOMElement` with id: `thread-edit-text`] and "comment" button. [`Button` with id: `thread-edit-submit`]
+* When this edit text/button is pressed, a modal [`DOMElement` with id: `comment-edit-container`] should appear that contains an input/textarea box [`DOMElement` with id: `comment-edit-text`] and "comment" button. [`Button` with id: `comment-edit-submit`]
 * The input/textarea box should pre-populate the current comment text.
 * When the comment button is pressed, the text inside the text comment should be posted as the updated comment for the thread at `PUT /comment` and the modal should disappear.
 * The edit button only appears if the user is an admin or a creator of that comment.
 
 #### 2.4.4. Liking a comment
 
-* Each comment should have a "like" text/button[`DOMElement` with class: `thread-like-button`]somewhere in the space that contains the comment info, the status should be implied visually(Text / Image).
+* Each comment should have a "like" text/button[`DOMElement` with class: `comment-like-toggle`]somewhere in the space that contains the comment info, the status should be implied visually(Text / Image).
 * If the comment is already liked, the text/button should say "unlike".
 * When the "like" text/button is pressed, the comment moves into a liked state via `PUT /comment/like`. After this change, the liked counter should change.
 * When the "unlike" text/button is pressed, the comment moves into a not-liked state via `PUT /comment/like`. After this change, the liked counter should change.
