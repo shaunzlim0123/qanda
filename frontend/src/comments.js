@@ -106,6 +106,45 @@ export function renderComments(threadId, container, isLocked) {
           commentBox.appendChild(date);
           commentBox.appendChild(likes);
 
+          // Like button
+          const likeBtn = document.createElement("button");
+          likeBtn.classList.add("thread-like-button");
+          likeBtn.type = "button";
+
+          const isLiked = comment.likes.includes(currentUserId);
+          likeBtn.textContent = isLiked ? "♥" : "♡";
+          if (isLiked) likeBtn.classList.add("liked");
+
+          likeBtn.addEventListener("click", () => {
+            likeBtn.classList.toggle("liked");
+            likeBtn.textContent = likeBtn.classList.contains("liked")
+              ? "♥"
+              : "♡";
+
+            const currentCount = Number(likes.textContent);
+            likes.textContent = likeBtn.classList.contains("liked")
+              ? currentCount + 1
+              : currentCount - 1;
+
+            apiCall(
+              "/comment/like",
+              "PUT",
+              { id: comment.id, turnon: likeBtn.classList.contains("liked") },
+              localStorage.getItem("token"),
+            ).catch((err) => {
+              likeBtn.classList.toggle("liked");
+              likeBtn.textContent = likeBtn.classList.contains("liked")
+                ? "♥"
+                : "♡";
+              const rollbackCount = Number(likes.textContent);
+              likes.textContent = likeBtn.classList.contains("liked")
+                ? rollbackCount + 1
+                : rollbackCount - 1;
+              printErrorMessage(err, commentBox);
+            });
+          });
+          commentBox.appendChild(likeBtn);
+
           // Edit button (admin or comment creator only)
           const currentUserData = userMap[currentUserId];
           if (
