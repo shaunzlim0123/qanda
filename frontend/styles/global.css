@@ -43,3 +43,8 @@ body {
 #thread-like-toggle.liked {
   color: red;
 }
+
+/* Nested comment indentation */
+.list-comment-container .list-comment-container {
+  margin-left: 24px;
+}
