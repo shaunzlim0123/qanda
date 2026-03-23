@@ -27,8 +27,16 @@ export function renderComments(threadId, container, isLocked) {
     localStorage.getItem("token"),
   )
     .then((comments) => {
-      // Fetch all unique users in parallel
-      const userIds = [...new Set(comments.map((c) => c.creatorId))];
+      // Current user identity (for admin/creator checks)
+      const token = localStorage.getItem("token");
+      const currentUserId = Number(
+        JSON.parse(atob(token.split(".")[1])).userId,
+      );
+
+      // Fetch all unique users in parallel (include current user for admin check)
+      const userIds = [
+        ...new Set([...comments.map((c) => c.creatorId), currentUserId]),
+      ];
       const userPromises = userIds.map((id) =>
         apiCall(
           `/user?userId=${id}`,
@@ -97,6 +105,22 @@ export function renderComments(threadId, container, isLocked) {
           commentBox.appendChild(body);
           commentBox.appendChild(date);
           commentBox.appendChild(likes);
+
+          // Edit button (admin or comment creator only)
+          const currentUserData = userMap[currentUserId];
+          if (
+            comment.creatorId === currentUserId ||
+            currentUserData.admin
+          ) {
+            const editBtn = document.createElement("button");
+            editBtn.classList.add("comment-edit-button");
+            editBtn.type = "button";
+            editBtn.textContent = "Edit";
+            editBtn.addEventListener("click", () => {
+              showEditCommentModal(comment, threadId, container, isLocked);
+            });
+            commentBox.appendChild(editBtn);
+          }
 
           // Reply button (hidden when locked)
           if (!isLocked) {
@@ -202,6 +226,50 @@ function showReplyModal(threadId, parentCommentId, container, isLocked) {
   });
 
   modal.appendChild(replyText);
+  modal.appendChild(submitBtn);
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+}
+
+function showEditCommentModal(comment, threadId, container, isLocked) {
+  const backdrop = document.createElement("div");
+  backdrop.classList.add("modal-backdrop");
+
+  const modal = document.createElement("div");
+  modal.id = "thread-edit-container";
+
+  const editText = document.createElement("textarea");
+  editText.id = "thread-edit-text";
+  editText.value = comment.content;
+
+  const submitBtn = document.createElement("button");
+  submitBtn.id = "thread-edit-submit";
+  submitBtn.type = "button";
+  submitBtn.textContent = "Comment";
+
+  submitBtn.addEventListener("click", () => {
+    const content = editText.value;
+    apiCall(
+      "/comment",
+      "PUT",
+      { id: comment.id, content },
+      localStorage.getItem("token"),
+    )
+      .then(() => {
+        backdrop.remove();
+        document.getElementById("comment-list-container").remove();
+        const oldText = document.getElementById("thread-comment-text");
+        if (oldText) oldText.remove();
+        const oldSubmit = document.getElementById("thread-comment-submit");
+        if (oldSubmit) oldSubmit.remove();
+        renderComments(threadId, container, isLocked);
+      })
+      .catch((err) => {
+        printErrorMessage(err, modal);
+      });
+  });
+
+  modal.appendChild(editText);
   modal.appendChild(submitBtn);
   backdrop.appendChild(modal);
   document.body.appendChild(backdrop);
