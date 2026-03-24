@@ -4,6 +4,15 @@ import { renderComments } from "./comments.js";
 export function renderCreateThreadPage(app) {
   const section = document.createElement("section");
 
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.classList.add("card-close-btn");
+  closeBtn.textContent = "x";
+  closeBtn.addEventListener("click", () => {
+    app.navigateTo("dashboard");
+  });
+  section.appendChild(closeBtn);
+
   const heading = document.createElement("h2");
   heading.textContent = "Create Thread";
   section.appendChild(heading);
@@ -243,12 +252,7 @@ export function renderThreadContent(threadId, content, app) {
             deleteBtn.type = "button";
             deleteBtn.textContent = "Delete";
             deleteBtn.addEventListener("click", () => {
-              apiCall(
-                "/thread",
-                "DELETE",
-                { id: threadId },
-                token,
-              ).then(() => {
+              apiCall("/thread", "DELETE", { id: threadId }, token).then(() => {
                 const index = app.threadIDs.indexOf(threadId);
                 if (index !== -1) app.threadIDs.splice(index, 1);
                 app.contentArea = null;
@@ -351,6 +355,18 @@ function showEditThreadModal(threadId, app) {
       token,
     )
       .then(() => {
+        const sidebarItem = document.querySelector(
+          `.list-thread-container[data-thread-id="${threadId}"]`,
+        );
+        if (sidebarItem) {
+          if (isPublic) {
+            sidebarItem.classList.remove("thread-private");
+          } else {
+            sidebarItem.classList.add("thread-private");
+          }
+          const sidebarTitle = sidebarItem.querySelector(".list-thread-title");
+          if (sidebarTitle) sidebarTitle.textContent = title;
+        }
         backdrop.remove();
         app.navigateTo("thread", threadId);
       })
