@@ -95,13 +95,21 @@ export function renderComments(threadId, container, isLocked, app) {
           likes.classList.add("list-comment-likes");
           likes.textContent = comment.likes.length;
 
-          commentBox.appendChild(profilePic);
-          commentBox.appendChild(authorName);
-          commentBox.appendChild(body);
-          commentBox.appendChild(date);
-          commentBox.appendChild(likes);
+          // avatar + author + date
+          const header = document.createElement("div");
+          header.classList.add("comment-header");
+          header.appendChild(profilePic);
+          header.appendChild(authorName);
+          header.appendChild(date);
+          commentBox.appendChild(header);
 
-          // Like button
+          // Body
+          commentBox.appendChild(body);
+
+          // like + count + edit + reply
+          const actions = document.createElement("div");
+          actions.classList.add("comment-actions");
+
           const likeBtn = document.createElement("button");
           likeBtn.classList.add("thread-like-button");
           likeBtn.type = "button";
@@ -138,7 +146,8 @@ export function renderComments(threadId, container, isLocked, app) {
               printErrorMessage(err, commentBox);
             });
           });
-          commentBox.appendChild(likeBtn);
+          actions.appendChild(likes);
+          actions.appendChild(likeBtn);
 
           // Edit button (admin or comment creator only)
           const currentUserData = userMap[currentUserId];
@@ -150,7 +159,7 @@ export function renderComments(threadId, container, isLocked, app) {
             editBtn.addEventListener("click", () => {
               showEditCommentModal(comment, threadId, container, isLocked, app);
             });
-            commentBox.appendChild(editBtn);
+            actions.appendChild(editBtn);
           }
 
           // Reply button (hidden when locked)
@@ -162,9 +171,10 @@ export function renderComments(threadId, container, isLocked, app) {
             replyBtn.addEventListener("click", () => {
               showReplyModal(threadId, comment.id, container, isLocked, app);
             });
-            commentBox.appendChild(replyBtn);
+            actions.appendChild(replyBtn);
           }
 
+          commentBox.appendChild(actions);
           parentEl.appendChild(commentBox);
 
           // Render nested children inside this comment
