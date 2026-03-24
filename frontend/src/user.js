@@ -19,8 +19,8 @@ export function renderProfileContent(userId, content, app) {
       ? profileFetch
       : apiCall(`/user?userId=${currentUserId}`, "GET", null, token);
 
-  Promise.all([profileFetch, currentUserFetch]).then(
-    ([userData, currentUserData]) => {
+  Promise.all([profileFetch, currentUserFetch])
+    .then(([userData, currentUserData]) => {
       const name = document.createElement("h2");
       name.textContent = userData.name;
       container.appendChild(name);
@@ -80,6 +80,67 @@ export function renderProfileContent(userId, content, app) {
         });
         container.appendChild(updateAdmin);
       }
-    },
-  );
+
+      const threadList = document.createElement("div");
+      threadList.id = "profile-thread-list";
+      container.appendChild(threadList);
+
+      function loadAllThreads(start) {
+        apiCall(`/threads?start=${start}`, "GET", null, token)
+          .then((threadIds) => {
+            const threadPromises = threadIds.map((id) =>
+              apiCall(`/thread?id=${id}`, "GET", null, token),
+            );
+            return Promise.all(threadPromises);
+          })
+          .then((threads) => {
+            const userThreads = threads.filter((t) => t.creatorId === userId);
+
+            const commentPromises = userThreads.map((thread) =>
+              apiCall(`/comments?threadId=${thread.id}`, "GET", null, token),
+            );
+
+            return Promise.all(commentPromises).then((commentsArrays) => {
+              userThreads.forEach((thread, index) => {
+                const threadBox = document.createElement("div");
+                threadBox.classList.add("profile-thread-container");
+
+                const title = document.createElement("h3");
+                title.classList.add("profile-thread-title");
+                title.textContent = thread.title;
+
+                const threadContent = document.createElement("p");
+                threadContent.classList.add("profile-thread-content");
+                threadContent.textContent = thread.content;
+
+                const likes = document.createElement("p");
+                likes.classList.add("profile-thread-likes");
+                likes.textContent = thread.likes.length;
+
+                const comments = document.createElement("p");
+                comments.classList.add("profile-thread-comments");
+                comments.textContent = commentsArrays[index].length;
+
+                threadBox.appendChild(title);
+                threadBox.appendChild(threadContent);
+                threadBox.appendChild(likes);
+                threadBox.appendChild(comments);
+                threadList.appendChild(threadBox);
+              });
+
+              if (threads.length >= 5) {
+                loadAllThreads(start + 5);
+              }
+            });
+          })
+          .catch((err) => {
+            printErrorMessage(err, threadList);
+          });
+      }
+
+      loadAllThreads(0);
+    })
+    .catch((err) => {
+      printErrorMessage(err, container);
+    });
 }
