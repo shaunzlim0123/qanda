@@ -122,9 +122,14 @@ function renderAuthenticatedLayout(page, data) {
 }
 
 function renderDashboardContent(content) {
-  const heading = document.createElement("h2");
-  heading.textContent = "Dashboard";
-  content.appendChild(heading);
+  const placeholder = document.createElement("div");
+  placeholder.classList.add("dashboard-placeholder");
+
+  const msg = document.createElement("p");
+  msg.textContent = "Select a thread";
+  placeholder.appendChild(msg);
+
+  content.appendChild(placeholder);
 }
 
 // Bootstrap
