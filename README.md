@@ -1,5 +1,6 @@
 # Changelog
 2026.03.12: Update backend repo link
+
 2026.03.23: Update class name
 
 # Assessment 3 (HTML, CSS, Vanilla JS)
@@ -183,14 +184,14 @@ Milestone 5 focuses predominately on user profiles and admins manage other admin
 
 * Let a user click on a user's name from a thread or comment, and be taken to a profile screen for that user. [`DOMElement` with class: `profile-container`]
 * The profile screen should contain any information the backend provides for that particular user ID via (`GET /user`) (excludes the user ID and the watching thread information).
-* The profile should also display all threads [`DOMElement` with id: `profile-thread-list`] made by that person. Each thread [`DOMElement` with class: `profile-thread-container`] should show the following content:
+* The profile should also display all threads [`DOMElement` with id: `profile-thread-list`] made by that person. Each thread [`DOMElement` with id: `profile-thread-container`] should show the following content:
   * Title [`DOMElement` with class: `profile-thread-title`]
   * Content [`DOMElement` with class: `profile-thread-content`]
   * Number of likes [`DOMElement` with class: `profile-thread-likes`]
   * Number of comments [`DOMElement` with class: `profile-thread-comments`] 
 
 #### 2.5.2. Viewing your own profile
-* Users can view their own profile [`DOMElement` with class: `profile-container`] as if they would any other user's profile.
+* Users can view their own profile [`DOMElement` with id: `profile-container`] as if they would any other user's profile.
 * A link to the users profile (via text or small icon) [`DOMElement` with id: `avatar-label`] should be visible somewhere common on most screens (at the very least on the feed screen) when logged in.
 
 #### 2.5.3. Updating your profile
