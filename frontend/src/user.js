@@ -144,3 +144,78 @@ export function renderProfileContent(userId, content, app) {
       printErrorMessage(err, container);
     });
 }
+
+function showEditProfileModal(userId, app) {
+  const token = localStorage.getItem("token");
+  const backdrop = document.createElement("div");
+  backdrop.classList.add("modal-backdrop");
+
+  const modal = document.createElement("div");
+  modal.id = "edit-profile-container";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Edit Profile";
+  modal.appendChild(heading);
+
+  const form = document.createElement("form");
+  form.appendChild(createLabeledInput("text", "edit-profile-email", "Email"));
+  form.appendChild(
+    createLabeledInput("password", "edit-profile-password", "Password"),
+  );
+  form.appendChild(createLabeledInput("text", "edit-profile-name", "Name"));
+  form.appendChild(createLabeledInput("file", "edit-profile-image", "Image"));
+
+  const submitBtn = document.createElement("button");
+  submitBtn.id = "edit-profile-submit";
+  submitBtn.type = "button";
+  submitBtn.textContent = "Save";
+  submitBtn.addEventListener("click", () => {
+    const email = document.getElementById("edit-profile-email").value;
+    const password = document.getElementById("edit-profile-password").value;
+    const name = document.getElementById("edit-profile-name").value;
+    const fileInput = document.getElementById("edit-profile-image");
+    const file = fileInput.files[0];
+
+    const imagePromise = file
+      ? fileToDataUrl(file)
+      : Promise.resolve(undefined);
+
+    imagePromise
+      .then((image) => {
+        const body = { email, name };
+        if (password) body.password = password;
+        if (image) body.image = image;
+        return apiCall("/user", "PUT", body, token);
+      })
+      .then(() => {
+        backdrop.remove();
+        app.navigateTo("profile", userId);
+      })
+      .catch((err) => {
+        printErrorMessage(err, modal);
+      });
+  });
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => {
+    backdrop.remove();
+  });
+
+  form.appendChild(submitBtn);
+  form.appendChild(cancelBtn);
+  modal.appendChild(form);
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+
+  // Pre-populate fields from current user data
+  apiCall(`/user?userId=${userId}`, "GET", null, token)
+    .then((userData) => {
+      document.getElementById("edit-profile-email").value = userData.email;
+      document.getElementById("edit-profile-name").value = userData.name;
+    })
+    .catch((err) => {
+      printErrorMessage(err, modal);
+    });
+}
