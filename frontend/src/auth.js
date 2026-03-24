@@ -19,22 +19,7 @@ export function renderLoginPage(app) {
   button.id = "login-submit";
   button.type = "button";
   button.textContent = "Login";
-  form.appendChild(button);
-
-  section.appendChild(form);
-
-  const nav = document.createElement("nav");
-  const link = document.createElement("a");
-  link.id = "register-link";
-  link.textContent = "Don't have an account? Register";
-  link.href = "#";
-  nav.appendChild(link);
-  section.appendChild(nav);
-
-  app.main.appendChild(section);
-
-  // User Interaction
-  document.getElementById("login-submit").addEventListener("click", () => {
+  button.addEventListener("click", () => {
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
     apiCall("/auth/login", "POST", { email, password })
@@ -46,11 +31,23 @@ export function renderLoginPage(app) {
         printErrorMessage(err, section);
       });
   });
+  form.appendChild(button);
 
-  document.getElementById("register-link").addEventListener("click", (e) => {
+  section.appendChild(form);
+
+  const nav = document.createElement("nav");
+  const link = document.createElement("a");
+  link.id = "register-link";
+  link.textContent = "Don't have an account? Register";
+  link.href = "#";
+  link.addEventListener("click", (e) => {
     e.preventDefault();
     app.navigateTo("register");
   });
+  nav.appendChild(link);
+  section.appendChild(nav);
+
+  app.main.appendChild(section);
 }
 
 export function renderRegisterPage(app) {
@@ -80,27 +77,7 @@ export function renderRegisterPage(app) {
   button.id = "register-submit";
   button.type = "button";
   button.textContent = "Register";
-  form.appendChild(button);
-
-  section.appendChild(form);
-
-  const nav = document.createElement("nav");
-  const link = document.createElement("a");
-  link.id = "login-link";
-  link.textContent = "Already have an account? Login";
-  link.href = "#";
-  nav.appendChild(link);
-  section.appendChild(nav);
-
-  app.main.appendChild(section);
-
-  // User Interaction
-  document.getElementById("login-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    app.navigateTo("login");
-  });
-
-  document.getElementById("register-submit").addEventListener("click", () => {
+  button.addEventListener("click", () => {
     const password = document.getElementById("register-password").value;
     const confirmPassword = document.getElementById(
       "register-confirm-password",
@@ -122,4 +99,21 @@ export function renderRegisterPage(app) {
         printErrorMessage(err, section);
       });
   });
+  form.appendChild(button);
+
+  section.appendChild(form);
+
+  const nav = document.createElement("nav");
+  const link = document.createElement("a");
+  link.id = "login-link";
+  link.textContent = "Already have an account? Login";
+  link.href = "#";
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    app.navigateTo("login");
+  });
+  nav.appendChild(link);
+  section.appendChild(nav);
+
+  app.main.appendChild(section);
 }
