@@ -44,18 +44,6 @@ body {
   color: red;
 }
 
-/* Comment Like Toggle */
-.thread-like-button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: gray;
-}
-
-.thread-like-button.liked {
-  color: red;
-}
 
 /* Nested comment indentation */
 .list-comment-container .list-comment-container {
