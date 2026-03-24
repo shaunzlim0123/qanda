@@ -17,6 +17,19 @@ export function renderCreateThreadPage(app) {
   submit.id = "create-thread-submit";
   submit.type = "button";
   submit.textContent = "Submit";
+  const token = localStorage.getItem("token");
+  submit.addEventListener("click", () => {
+    const title = document.getElementById("create-thread-title").value;
+    const isPublic = !document.getElementById("create-thread-private").checked;
+    const content = document.getElementById("create-thread-body").value;
+    apiCall("/thread", "POST", { title, isPublic, content }, token)
+      .then((data) => {
+        app.navigateTo("thread", data.id);
+      })
+      .catch((err) => {
+        printErrorMessage(err, section);
+      });
+  });
 
   form.appendChild(createLabeledInput("text", "create-thread-title", "Title"));
   form.appendChild(
@@ -28,28 +41,6 @@ export function renderCreateThreadPage(app) {
   section.appendChild(form);
 
   app.main.appendChild(section);
-
-  // User Interaction
-  document
-    .getElementById("create-thread-submit")
-    .addEventListener("click", () => {
-      const title = document.getElementById("create-thread-title").value;
-      const isPublic = !document.getElementById("create-thread-private")
-        .checked;
-      const content = document.getElementById("create-thread-body").value;
-      apiCall(
-        "/thread",
-        "POST",
-        { title, isPublic, content },
-        localStorage.getItem("token"),
-      )
-        .then((data) => {
-          app.navigateTo("thread", data.id);
-        })
-        .catch((err) => {
-          printErrorMessage(err, section);
-        });
-    });
 }
 
 export function renderThreadList(sidebar, app) {
@@ -62,31 +53,17 @@ export function renderThreadList(sidebar, app) {
   sidebar.appendChild(moreBtn);
 
   function loadThreads() {
-    apiCall(
-      `/threads?start=${start}`,
-      "GET",
-      null,
-      localStorage.getItem("token"),
-    )
+    const token = localStorage.getItem("token");
+    apiCall(`/threads?start=${start}`, "GET", null, token)
       .then((threadIds) => {
         const threadPromises = threadIds.map((id) =>
-          apiCall(
-            `/thread?id=${id}`,
-            "GET",
-            null,
-            localStorage.getItem("token"),
-          ),
+          apiCall(`/thread?id=${id}`, "GET", null, token),
         );
         return Promise.all(threadPromises);
       })
       .then((threads) => {
         const authorPromises = threads.map((thread) =>
-          apiCall(
-            `/user?userId=${thread.creatorId}`,
-            "GET",
-            null,
-            localStorage.getItem("token"),
-          ),
+          apiCall(`/user?userId=${thread.creatorId}`, "GET", null, token),
         );
 
         return Promise.all(authorPromises).then((authors) => {
@@ -149,22 +126,30 @@ export function renderThreadContent(threadId, content, app) {
   const container = document.createElement("div");
   container.id = "thread-container";
 
-  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
+  const token = localStorage.getItem("token");
+
+  apiCall(`/thread?id=${threadId}`, "GET", null, token)
     .then((thread) => {
-      return apiCall(
-        `/user?userId=${thread.creatorId}`,
-        "GET",
-        null,
-        localStorage.getItem("token"),
-      )
-        .then((userData) => {
+      const currentUserId = Number(
+        JSON.parse(atob(token.split(".")[1])).userId,
+      );
+
+      return Promise.all([
+        apiCall(`/user?userId=${thread.creatorId}`, "GET", null, token),
+        apiCall(`/user?userId=${currentUserId}`, "GET", null, token),
+      ])
+        .then(([userData, currentUserData]) => {
           const title = document.createElement("h2");
           title.id = "thread-title";
           title.textContent = thread.title;
 
-          const author = document.createElement("p");
+          const author = document.createElement("button");
           author.id = "thread-author";
+          author.type = "button";
           author.textContent = userData.name;
+          author.addEventListener("click", () => {
+            app.navigateTo("profile", thread.creatorId);
+          });
 
           const body = document.createElement("p");
           body.id = "thread-body";
@@ -179,14 +164,11 @@ export function renderThreadContent(threadId, content, app) {
           container.appendChild(body);
           container.appendChild(likes);
 
-          // Current user identity
-          const token = localStorage.getItem("token");
-          const currentUserId = JSON.parse(atob(token.split(".")[1])).userId;
-          const isCreator = thread.creatorId === Number(currentUserId);
+          const isCreator = thread.creatorId === currentUserId;
 
           // Actions hidden when thread is locked: edit, like
           if (!thread.lock) {
-            if (isCreator || userData.admin) {
+            if (isCreator || currentUserData.admin) {
               const editBtn = document.createElement("button");
               editBtn.id = "thread-edit-button";
               editBtn.type = "button";
@@ -230,7 +212,7 @@ export function renderThreadContent(threadId, content, app) {
                   id: threadId,
                   turnon: likeBtn.classList.contains("liked"),
                 },
-                localStorage.getItem("token"),
+                token,
               ).catch((err) => {
                 likeBtn.classList.toggle("liked");
                 likeBtn.textContent = likeBtn.classList.contains("liked")
@@ -255,7 +237,7 @@ export function renderThreadContent(threadId, content, app) {
           }
 
           // Actions always visible: delete, watch
-          if (isCreator || userData.admin) {
+          if (isCreator || currentUserData.admin) {
             const deleteBtn = document.createElement("button");
             deleteBtn.id = "thread-delete-button";
             deleteBtn.type = "button";
@@ -265,7 +247,7 @@ export function renderThreadContent(threadId, content, app) {
                 "/thread",
                 "DELETE",
                 { id: threadId },
-                localStorage.getItem("token"),
+                token,
               ).then(() => {
                 const index = app.threadIDs.indexOf(threadId);
                 if (index !== -1) app.threadIDs.splice(index, 1);
@@ -301,7 +283,7 @@ export function renderThreadContent(threadId, content, app) {
                 id: threadId,
                 turnon: watchBtn.classList.contains("watching"),
               },
-              localStorage.getItem("token"),
+              token,
             ).catch((err) => {
               watchBtn.classList.toggle("watching");
               watchBtn.textContent = watchBtn.classList.contains("watching")
@@ -313,7 +295,7 @@ export function renderThreadContent(threadId, content, app) {
           container.appendChild(watchBtn);
 
           // Render comments section
-          renderComments(threadId, container, thread.lock);
+          renderComments(threadId, container, thread.lock, app);
         })
         .catch((err) => {
           printErrorMessage(err, container);
@@ -327,6 +309,7 @@ export function renderThreadContent(threadId, content, app) {
 }
 
 function showEditThreadModal(threadId, app) {
+  const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");
 
@@ -355,6 +338,26 @@ function showEditThreadModal(threadId, app) {
   submitBtn.id = "edit-thread-submit";
   submitBtn.type = "button";
   submitBtn.textContent = "Save";
+  submitBtn.addEventListener("click", () => {
+    const title = document.getElementById("edit-thread-title").value;
+    const isPublic = !document.getElementById("edit-thread-private").checked;
+    const content = document.getElementById("edit-thread-body").value;
+    const lock = document.getElementById("edit-thread-locked").checked;
+
+    apiCall(
+      "/thread",
+      "PUT",
+      { id: threadId, title, isPublic, content, lock },
+      token,
+    )
+      .then(() => {
+        backdrop.remove();
+        app.navigateTo("thread", threadId);
+      })
+      .catch((err) => {
+        printErrorMessage(err, modal);
+      });
+  });
 
   const cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
@@ -370,7 +373,7 @@ function showEditThreadModal(threadId, app) {
   document.body.appendChild(backdrop);
 
   // Pre-populate fields from current thread data
-  apiCall(`/thread?id=${threadId}`, "GET", null, localStorage.getItem("token"))
+  apiCall(`/thread?id=${threadId}`, "GET", null, token)
     .then((thread) => {
       document.getElementById("edit-thread-title").value = thread.title;
       document.getElementById("edit-thread-body").value = thread.content;
@@ -379,29 +382,5 @@ function showEditThreadModal(threadId, app) {
     })
     .catch((err) => {
       printErrorMessage(err, modal);
-    });
-
-  // User Interaction
-  document
-    .getElementById("edit-thread-submit")
-    .addEventListener("click", () => {
-      const title = document.getElementById("edit-thread-title").value;
-      const isPublic = !document.getElementById("edit-thread-private").checked;
-      const content = document.getElementById("edit-thread-body").value;
-      const lock = document.getElementById("edit-thread-locked").checked;
-
-      apiCall(
-        "/thread",
-        "PUT",
-        { id: threadId, title, isPublic, content, lock },
-        localStorage.getItem("token"),
-      )
-        .then(() => {
-          backdrop.remove();
-          app.navigateTo("thread", threadId);
-        })
-        .catch((err) => {
-          printErrorMessage(err, modal);
-        });
     });
 }
