@@ -195,14 +195,9 @@ export function renderThreadContent(threadId, content, app) {
           body.id = "thread-body";
           body.textContent = thread.content;
 
-          const likes = document.createElement("p");
-          likes.id = "thread-likes";
-          likes.textContent = thread.likes.length;
-
           container.appendChild(title);
           container.appendChild(author);
           container.appendChild(body);
-          container.appendChild(likes);
 
           const isCreator = thread.creatorId === currentUserId;
 
@@ -222,17 +217,17 @@ export function renderThreadContent(threadId, content, app) {
             const likeBtn = document.createElement("button");
             likeBtn.id = "thread-like-toggle";
             likeBtn.type = "button";
+            likeBtn.textContent = thread.likes.length;
 
             const isLiked = thread.likes.includes(Number(currentUserId));
-            likeBtn.textContent = "♥";
             if (isLiked) likeBtn.classList.add("liked");
 
             likeBtn.addEventListener("click", () => {
               likeBtn.classList.toggle("liked");
 
               // increment/decrement the like count UI
-              const currentCount = Number(likes.textContent);
-              likes.textContent = likeBtn.classList.contains("liked")
+              const currentCount = Number(likeBtn.textContent);
+              likeBtn.textContent = likeBtn.classList.contains("liked")
                 ? currentCount + 1
                 : currentCount - 1;
 
@@ -240,7 +235,7 @@ export function renderThreadContent(threadId, content, app) {
               const sidebarLikes = document.querySelector(
                 `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
               );
-              if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
+              if (sidebarLikes) sidebarLikes.textContent = likeBtn.textContent;
 
               apiCall(
                 "/thread/like",
@@ -254,8 +249,8 @@ export function renderThreadContent(threadId, content, app) {
                 likeBtn.classList.toggle("liked");
 
                 // increment/decrement the like count UI
-                const currentCount = Number(likes.textContent);
-                likes.textContent = likeBtn.classList.contains("liked")
+                const currentCount = Number(likeBtn.textContent);
+                likeBtn.textContent = likeBtn.classList.contains("liked")
                   ? currentCount + 1
                   : currentCount - 1;
 
@@ -263,7 +258,8 @@ export function renderThreadContent(threadId, content, app) {
                 const sidebarLikes = document.querySelector(
                   `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
                 );
-                if (sidebarLikes) sidebarLikes.textContent = likes.textContent;
+                if (sidebarLikes)
+                  sidebarLikes.textContent = likeBtn.textContent;
                 printErrorMessage(err, container);
               });
             });
@@ -325,6 +321,68 @@ export function renderThreadContent(threadId, content, app) {
 
           // Render comments section
           renderComments(threadId, container, thread.lock, app);
+
+          // poll for live updates
+          if (app.pollInterval) clearInterval(app.pollInterval);
+          let lastCommentCount = null;
+
+          app.pollInterval = setInterval(() => {
+            apiCall(`/thread?id=${threadId}`, "GET", null, token).then(
+              (latest) => {
+                const likeBtn = document.getElementById("thread-like-toggle");
+                if (likeBtn) {
+                  likeBtn.textContent = latest.likes.length;
+                  if (latest.likes.includes(currentUserId)) {
+                    likeBtn.classList.add("liked");
+                  } else {
+                    likeBtn.classList.remove("liked");
+                  }
+                }
+                const sidebarLikes = document.querySelector(
+                  `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
+                );
+                if (sidebarLikes) {
+                  sidebarLikes.textContent = latest.likes.length;
+                }
+              },
+            );
+
+            apiCall(`/comments?threadId=${threadId}`, "GET", null, token)
+              .then((comments) => {
+                if (lastCommentCount === null) {
+                  lastCommentCount = comments.length;
+                  return;
+                }
+                if (comments.length !== lastCommentCount) {
+                  lastCommentCount = comments.length;
+                  // save what the user was typing before re-render
+                  const textArea = document.getElementById(
+                    "thread-comment-text",
+                  );
+                  const savedText = textArea ? textArea.value : "";
+
+                  const commentList = document.getElementById(
+                    "comment-list-container",
+                  );
+                  if (commentList) commentList.remove();
+                  if (textArea) textArea.remove();
+                  const oldSubmit = document.getElementById(
+                    "thread-comment-submit",
+                  );
+                  if (oldSubmit) oldSubmit.remove();
+
+                  renderComments(threadId, container, thread.lock, app);
+
+                  setTimeout(() => {
+                    const newArea = document.getElementById(
+                      "thread-comment-text",
+                    );
+                    if (newArea && savedText) newArea.value = savedText;
+                  }, 100);
+                }
+              })
+              .catch(() => {});
+          }, 2000);
         })
         .catch((err) => {
           printErrorMessage(err, container);

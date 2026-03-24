@@ -6,7 +6,7 @@ import {
 } from "./thread.js";
 import { renderProfileContent } from "./user.js";
 
-// Shared app state
+// app state shared across pages
 const app = {
   main: document.querySelector("main"),
   contentArea: null,
@@ -17,12 +17,20 @@ const app = {
 };
 
 function clearMain() {
+  if (app.pollInterval) {
+    clearInterval(app.pollInterval);
+    app.pollInterval = null;
+  }
   while (app.main.firstChild) {
     app.main.removeChild(app.main.firstChild);
   }
 }
 
 function clearContent() {
+  if (app.pollInterval) {
+    clearInterval(app.pollInterval);
+    app.pollInterval = null;
+  }
   while (app.contentArea.firstChild) {
     app.contentArea.removeChild(app.contentArea.firstChild);
   }
@@ -38,7 +46,6 @@ function renderContentPage(page, data) {
   }
 }
 
-// Navigation: call the appropriate page function
 function navigateTo(page, data) {
   if (
     app.contentArea &&
@@ -69,21 +76,30 @@ function navigateTo(page, data) {
 }
 app.navigateTo = navigateTo;
 
-// Shared layout for all authenticated pages
 function renderAuthenticatedLayout(page, data) {
   const wrapper = document.createElement("div");
   wrapper.id = "dashboard-container";
 
   const header = document.createElement("header");
 
+  const headerLeft = document.createElement("div");
+  headerLeft.classList.add("header-left");
+
+  const brand = document.createElement("span");
+  brand.classList.add("brand-text");
+  brand.textContent = "Qanda";
+  headerLeft.appendChild(brand);
+
   const createBtn = document.createElement("button");
   createBtn.id = "create-thread-button";
   createBtn.type = "button";
-  createBtn.textContent = "Create";
+  createBtn.textContent = "Create Thread";
   createBtn.addEventListener("click", () => {
     navigateTo("create-thread");
   });
-  header.appendChild(createBtn);
+  headerLeft.appendChild(createBtn);
+
+  header.appendChild(headerLeft);
 
   const myProfile = document.createElement("button");
   myProfile.id = "avatar-label";
