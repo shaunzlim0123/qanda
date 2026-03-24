@@ -9,7 +9,7 @@ export function renderCreateThreadPage(app) {
   closeBtn.classList.add("card-close-btn");
   closeBtn.textContent = "x";
   closeBtn.addEventListener("click", () => {
-    app.navigateTo("dashboard");
+    app.navigateTo(app.lastPage, app.lastData);
   });
   section.appendChild(closeBtn);
 
@@ -42,7 +42,7 @@ export function renderCreateThreadPage(app) {
 
   form.appendChild(createLabeledInput("text", "create-thread-title", "Title"));
   form.appendChild(
-    createLabeledInput("checkbox", "create-thread-private", "Private Checkbox"),
+    createLabeledInput("checkbox", "create-thread-private", "Private"),
   );
   form.appendChild(body);
   form.appendChild(submit);
@@ -54,14 +54,27 @@ export function renderCreateThreadPage(app) {
 
 export function renderThreadList(sidebar, app) {
   let start = 0;
+  let loading = false;
+  let allLoaded = false;
 
-  const moreBtn = document.createElement("button");
-  moreBtn.id = "list-more-button";
-  moreBtn.type = "button";
-  moreBtn.textContent = "More";
-  sidebar.appendChild(moreBtn);
+  const loader = document.createElement("p");
+  loader.classList.add("thread-list-loader");
+  loader.textContent = "Loading...";
+  sidebar.appendChild(loader);
+
+  function showLoader() {
+    loader.classList.add("visible");
+  }
+
+  function hideLoader() {
+    loader.classList.remove("visible");
+  }
 
   function loadThreads() {
+    if (loading || allLoaded) return;
+    loading = true;
+    showLoader();
+
     const token = localStorage.getItem("token");
     apiCall(`/threads?start=${start}`, "GET", null, token)
       .then((threadIds) => {
@@ -108,17 +121,28 @@ export function renderThreadList(sidebar, app) {
             threadBox.addEventListener("click", () => {
               app.navigateTo("thread", thread.id);
             });
-            sidebar.insertBefore(threadBox, moreBtn);
+            sidebar.insertBefore(threadBox, loader);
           });
 
           start += 5;
 
           if (threads.length < 5) {
-            moreBtn.remove();
+            allLoaded = true;
+            loader.remove();
+          }
+
+          loading = false;
+          hideLoader();
+
+          // If sidebar still isn't scrollable, keep loading
+          if (!allLoaded && sidebar.scrollHeight <= sidebar.clientHeight) {
+            loadThreads();
           }
         });
       })
       .catch((err) => {
+        loading = false;
+        hideLoader();
         printErrorMessage(err, sidebar);
       });
   }
@@ -127,8 +151,15 @@ export function renderThreadList(sidebar, app) {
   app.threadIDs.length = 0;
   loadThreads();
 
-  // Load more on button click
-  moreBtn.addEventListener("click", loadThreads);
+  // Infinite scroll: load more when near bottom
+  sidebar.addEventListener("scroll", () => {
+    if (loading || allLoaded) return;
+    const nearBottom =
+      sidebar.scrollTop + sidebar.clientHeight >= sidebar.scrollHeight - 50;
+    if (nearBottom) {
+      loadThreads();
+    }
+  });
 }
 
 export function renderThreadContent(threadId, content, app) {
@@ -193,14 +224,11 @@ export function renderThreadContent(threadId, content, app) {
             likeBtn.type = "button";
 
             const isLiked = thread.likes.includes(Number(currentUserId));
-            likeBtn.textContent = isLiked ? "♥" : "♡";
+            likeBtn.textContent = "♥";
             if (isLiked) likeBtn.classList.add("liked");
 
             likeBtn.addEventListener("click", () => {
               likeBtn.classList.toggle("liked");
-              likeBtn.textContent = likeBtn.classList.contains("liked")
-                ? "♥"
-                : "♡";
 
               // increment/decrement the like count UI
               const currentCount = Number(likes.textContent);
@@ -224,9 +252,6 @@ export function renderThreadContent(threadId, content, app) {
                 token,
               ).catch((err) => {
                 likeBtn.classList.toggle("liked");
-                likeBtn.textContent = likeBtn.classList.contains("liked")
-                  ? "♥"
-                  : "♡";
 
                 // increment/decrement the like count UI
                 const currentCount = Number(likes.textContent);
