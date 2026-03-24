@@ -12,6 +12,8 @@ const app = {
   contentArea: null,
   threadIDs: [],
   navigateTo: null,
+  lastPage: "dashboard",
+  lastData: null,
 };
 
 function clearMain() {
@@ -44,6 +46,8 @@ function navigateTo(page, data) {
     page !== "register" &&
     page !== "create-thread"
   ) {
+    app.lastPage = page;
+    app.lastData = data;
     clearContent();
     renderContentPage(page, data);
     return;
@@ -58,6 +62,8 @@ function navigateTo(page, data) {
   } else if (page === "create-thread") {
     renderCreateThreadPage(app);
   } else {
+    app.lastPage = page;
+    app.lastData = data;
     renderAuthenticatedLayout(page, data);
   }
 }
