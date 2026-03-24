@@ -4,6 +4,7 @@ import {
   renderThreadList,
   renderThreadContent,
 } from "./thread.js";
+import { renderProfileContent } from "./user.js";
 
 // Shared app state
 const app = {
@@ -25,6 +26,16 @@ function clearContent() {
   }
 }
 
+function renderContentPage(page, data) {
+  if (page === "dashboard") {
+    renderDashboardContent(app.contentArea);
+  } else if (page === "thread") {
+    renderThreadContent(data, app.contentArea, app);
+  } else if (page === "profile") {
+    renderProfileContent(data, app.contentArea, app);
+  }
+}
+
 // Navigation: call the appropriate page function
 function navigateTo(page, data) {
   if (
@@ -34,11 +45,7 @@ function navigateTo(page, data) {
     page !== "create-thread"
   ) {
     clearContent();
-    if (page === "dashboard") {
-      renderDashboardContent(app.contentArea);
-    } else if (page === "thread") {
-      renderThreadContent(data, app.contentArea, app);
-    }
+    renderContentPage(page, data);
     return;
   }
 
@@ -67,12 +74,30 @@ function renderAuthenticatedLayout(page, data) {
   createBtn.id = "create-thread-button";
   createBtn.type = "button";
   createBtn.textContent = "Create";
+  createBtn.addEventListener("click", () => {
+    navigateTo("create-thread");
+  });
   header.appendChild(createBtn);
+
+  const myProfile = document.createElement("button");
+  myProfile.id = "avatar-label";
+  myProfile.type = "button";
+  myProfile.textContent = "My Profile";
+  myProfile.addEventListener("click", () => {
+    const token = localStorage.getItem("token");
+    const currentUserId = Number(JSON.parse(atob(token.split(".")[1])).userId);
+    navigateTo("profile", currentUserId);
+  });
+  header.appendChild(myProfile);
 
   const logoutBtn = document.createElement("button");
   logoutBtn.id = "logout-button";
   logoutBtn.type = "button";
   logoutBtn.textContent = "Logout";
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    navigateTo("login");
+  });
   header.appendChild(logoutBtn);
 
   wrapper.appendChild(header);
@@ -88,27 +113,12 @@ function renderAuthenticatedLayout(page, data) {
   app.contentArea = document.createElement("section");
   app.contentArea.classList.add("content-area");
 
-  if (page === "dashboard") {
-    renderDashboardContent(app.contentArea);
-  } else if (page === "thread") {
-    renderThreadContent(data, app.contentArea, app);
-  }
+  renderContentPage(page, data);
 
   body.appendChild(app.contentArea);
 
   wrapper.appendChild(body);
   app.main.appendChild(wrapper);
-
-  document
-    .getElementById("create-thread-button")
-    .addEventListener("click", () => {
-      navigateTo("create-thread");
-    });
-
-  document.getElementById("logout-button").addEventListener("click", () => {
-    localStorage.removeItem("token");
-    navigateTo("login");
-  });
 }
 
 function renderDashboardContent(content) {
