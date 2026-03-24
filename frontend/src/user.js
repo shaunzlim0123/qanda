@@ -45,6 +45,7 @@ export function renderProfileContent(userId, content, app) {
 
       if (userData.admin) {
         const adminBadge = document.createElement("p");
+        adminBadge.classList.add("admin-badge");
         adminBadge.textContent = "Admin";
         container.appendChild(adminBadge);
       }
