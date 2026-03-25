@@ -5,6 +5,10 @@ import {
   renderThreadContent,
 } from "./thread.js";
 import { renderProfileContent } from "./user.js";
+import {
+  startNotificationPolling,
+  stopNotificationPolling,
+} from "./notifications.js";
 
 // app state shared across pages
 const app = {
@@ -21,6 +25,7 @@ function clearMain() {
     clearInterval(app.pollInterval);
     app.pollInterval = null;
   }
+  stopNotificationPolling(app);
   while (app.main.firstChild) {
     app.main.removeChild(app.main.firstChild);
   }
@@ -141,6 +146,8 @@ function renderAuthenticatedLayout(page, data) {
 
   wrapper.appendChild(body);
   app.main.appendChild(wrapper);
+
+  startNotificationPolling(app);
 }
 
 function renderDashboardContent(content) {
