@@ -20,6 +20,63 @@ export function stopNotificationPolling(app) {
 const commentCounts = {};
 let seeded = false;
 
+let pingContainer = null;
+
+function ensurePingContainer() {
+  if (!pingContainer) {
+    pingContainer = document.createElement("div");
+    pingContainer.id = "ping-container";
+    document.body.appendChild(pingContainer);
+  }
+}
+
+function showPing(threadTitle, threadId, app) {
+  ensurePingContainer();
+
+  const ping = document.createElement("div");
+  ping.classList.add("ping-alert");
+
+  const icon = document.createElement("span");
+  icon.classList.add("ping-icon");
+  icon.textContent = "\u24D8";
+  ping.appendChild(icon);
+
+  const body = document.createElement("div");
+  body.classList.add("ping-body");
+
+  const heading = document.createElement("p");
+  heading.classList.add("ping-heading");
+  heading.textContent = "New Comment!";
+  body.appendChild(heading);
+
+  const text = document.createElement("p");
+  text.classList.add("ping-text");
+  text.textContent = threadTitle;
+  body.appendChild(text);
+
+  ping.appendChild(body);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.textContent = "\u00d7";
+  closeBtn.addEventListener("click", () => {
+    ping.remove();
+  });
+  ping.appendChild(closeBtn);
+
+  ping.addEventListener("click", (e) => {
+    if (e.target === closeBtn) return;
+    app.navigateTo("thread", threadId);
+    ping.remove();
+  });
+
+  pingContainer.appendChild(ping);
+
+  setTimeout(() => {
+    if (ping.parentNode) ping.remove();
+  }, 10000);
+}
+
 function pollWatchedThreads(app) {
   const token = localStorage.getItem("token");
   if (!token) return;
