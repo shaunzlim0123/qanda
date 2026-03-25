@@ -3,6 +3,8 @@
 
 2026.03.23: Update class name
 
+2026.03.26: Clarify comment ordering, update DOM element attributes
+
 # Assessment 3 (HTML, CSS, Vanilla JS)
 
 [Please see course website for full spec](https://cgi.cse.unsw.edu.au/~cs6080/NOW/assessments/assignments/ass3)
@@ -147,7 +149,7 @@ Milestone 4 focuses on commenting features once the threads have been made.
     * "[time] [denomination](s) ago" if posted more than a minute ago, e.g. "1 minute(s) ago" "7 hour(s) ago". You move from 1-59 minutes, then 1-23 hours, then 1-6 days, then 1-N weeks where N can be a number of unlimited size.
   * The number of people who have liked the comment. [`DOMElement` with class: `list-comment-likes`]
 * Some comments have a parent that is another comment. These comments need to be nested under their parent comment. For each layer of nesting, there needs to be some kind of visual indentation.
-* Comments must be sorted in reverse chronological order (most recent comments at the top of the page). Nested comments should be sorted within their nested area.
+* Comments must be sorted in reverse chronological order (most recent comments at the top of the page). Nested comments should be sorted within their nested area in chronological order (oldest comments at the top).
 
 #### 2.4.2. Making a comment
 
@@ -182,9 +184,9 @@ Milestone 5 focuses predominately on user profiles and admins manage other admin
 
 #### 2.5.1. Viewing a profile
 
-* Let a user click on a user's name from a thread or comment, and be taken to a profile screen for that user. [`DOMElement` with class: `profile-container`]
+* Let a user click on a user's name from a thread or comment, and be taken to a profile screen for that user. [`DOMElement` with id: `profile-container`]
 * The profile screen should contain any information the backend provides for that particular user ID via (`GET /user`) (excludes the user ID and the watching thread information).
-* The profile should also display all threads [`DOMElement` with id: `profile-thread-list`] made by that person. Each thread [`DOMElement` with id: `profile-thread-container`] should show the following content:
+* The profile should also display all threads [`DOMElement` with id: `profile-thread-list`] made by that person. Each thread [`DOMElement` with class: `profile-thread-container`] should show the following content:
   * Title [`DOMElement` with class: `profile-thread-title`]
   * Content [`DOMElement` with class: `profile-thread-content`]
   * Number of likes [`DOMElement` with class: `profile-thread-likes`]
