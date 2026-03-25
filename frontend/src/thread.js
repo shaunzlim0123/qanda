@@ -201,23 +201,28 @@ export function renderThreadContent(threadId, content, app) {
 
           const isCreator = thread.creatorId === currentUserId;
 
-          // Actions hidden when thread is locked: edit, like
-          if (!thread.lock) {
-            if (isCreator || currentUserData.admin) {
-              const editBtn = document.createElement("button");
-              editBtn.id = "thread-edit-button";
-              editBtn.type = "button";
-              editBtn.textContent = "Edit";
-              editBtn.addEventListener("click", () => {
-                showEditThreadModal(threadId, app);
-              });
-              container.appendChild(editBtn);
-            }
+          // Edit button visible for creator/admin regardless of lock
+          if (isCreator || currentUserData.admin) {
+            const editBtn = document.createElement("button");
+            editBtn.id = "thread-edit-button";
+            editBtn.type = "button";
+            editBtn.textContent = "Edit";
+            editBtn.addEventListener("click", () => {
+              showEditThreadModal(threadId, app);
+            });
+            container.appendChild(editBtn);
+          }
 
+          // Like button hidden when thread is locked
+          if (!thread.lock) {
             const likeBtn = document.createElement("button");
             likeBtn.id = "thread-like-toggle";
             likeBtn.type = "button";
-            likeBtn.textContent = thread.likes.length;
+
+            const likesCount = document.createElement("span");
+            likesCount.id = "thread-likes";
+            likesCount.textContent = thread.likes.length;
+            likeBtn.appendChild(likesCount);
 
             const isLiked = thread.likes.includes(Number(currentUserId));
             if (isLiked) likeBtn.classList.add("liked");
@@ -226,16 +231,17 @@ export function renderThreadContent(threadId, content, app) {
               likeBtn.classList.toggle("liked");
 
               // increment/decrement the like count UI
-              const currentCount = Number(likeBtn.textContent);
-              likeBtn.textContent = likeBtn.classList.contains("liked")
+              const currentCount = Number(likesCount.textContent);
+              const newCount = likeBtn.classList.contains("liked")
                 ? currentCount + 1
                 : currentCount - 1;
+              likesCount.textContent = newCount;
 
               // Update sidebar threads to reflect the like update
               const sidebarLikes = document.querySelector(
                 `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
               );
-              if (sidebarLikes) sidebarLikes.textContent = likeBtn.textContent;
+              if (sidebarLikes) sidebarLikes.textContent = newCount;
 
               apiCall(
                 "/thread/like",
@@ -248,18 +254,18 @@ export function renderThreadContent(threadId, content, app) {
               ).catch((err) => {
                 likeBtn.classList.toggle("liked");
 
-                // increment/decrement the like count UI
-                const currentCount = Number(likeBtn.textContent);
-                likeBtn.textContent = likeBtn.classList.contains("liked")
-                  ? currentCount + 1
-                  : currentCount - 1;
+                // rollback the like count UI
+                const rollbackCount = Number(likesCount.textContent);
+                const rolledBack = likeBtn.classList.contains("liked")
+                  ? rollbackCount + 1
+                  : rollbackCount - 1;
+                likesCount.textContent = rolledBack;
 
                 // Update sidebar threads to reflect the like update
                 const sidebarLikes = document.querySelector(
                   `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
                 );
-                if (sidebarLikes)
-                  sidebarLikes.textContent = likeBtn.textContent;
+                if (sidebarLikes) sidebarLikes.textContent = rolledBack;
                 printErrorMessage(err, container);
               });
             });
@@ -331,13 +337,14 @@ export function renderThreadContent(threadId, content, app) {
               (latest) => {
                 const likeBtn = document.getElementById("thread-like-toggle");
                 if (likeBtn) {
-                  likeBtn.textContent = latest.likes.length;
                   if (latest.likes.includes(currentUserId)) {
                     likeBtn.classList.add("liked");
                   } else {
                     likeBtn.classList.remove("liked");
                   }
                 }
+                const likesEl = document.getElementById("thread-likes");
+                if (likesEl) likesEl.textContent = latest.likes.length;
                 const sidebarLikes = document.querySelector(
                   `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
                 );

@@ -8,6 +8,7 @@ import {
 export function renderProfileContent(userId, content, app) {
   const container = document.createElement("div");
   container.id = "profile-container";
+  container.classList.add("profile-container");
   content.appendChild(container);
 
   const token = localStorage.getItem("token");
