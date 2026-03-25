@@ -7,7 +7,7 @@ import {
 
 export function renderProfileContent(userId, content, app) {
   const container = document.createElement("div");
-  container.classList.add("profile-container");
+  container.id = "profile-container";
   content.appendChild(container);
 
   const token = localStorage.getItem("token");
@@ -104,7 +104,7 @@ export function renderProfileContent(userId, content, app) {
             return Promise.all(commentPromises).then((commentsArrays) => {
               userThreads.forEach((thread, index) => {
                 const threadBox = document.createElement("div");
-                threadBox.classList.add("profile-thread-container");
+                threadBox.id = "profile-thread-container";
 
                 const title = document.createElement("h3");
                 title.classList.add("profile-thread-title");

@@ -111,7 +111,7 @@ export function renderComments(threadId, container, isLocked, app) {
           actions.classList.add("comment-actions");
 
           const likeBtn = document.createElement("button");
-          likeBtn.classList.add("thread-like-button");
+          likeBtn.classList.add("comment-like-toggle");
           likeBtn.type = "button";
 
           const isLiked = comment.likes.includes(currentUserId);
@@ -165,7 +165,7 @@ export function renderComments(threadId, container, isLocked, app) {
           // Reply button (hidden when locked)
           if (!isLocked) {
             const replyBtn = document.createElement("button");
-            replyBtn.classList.add("thread-reply-button");
+            replyBtn.classList.add("comment-reply-button");
             replyBtn.type = "button";
             replyBtn.textContent = "Reply";
             replyBtn.addEventListener("click", () => {
@@ -234,13 +234,13 @@ function showReplyModal(threadId, parentCommentId, container, isLocked, app) {
   backdrop.classList.add("modal-backdrop");
 
   const modal = document.createElement("div");
-  modal.id = "thread-reply-container";
+  modal.id = "comment-reply-container";
 
   const replyText = document.createElement("textarea");
-  replyText.id = "thread-reply-text";
+  replyText.id = "comment-reply-text";
 
   const submitBtn = document.createElement("button");
-  submitBtn.id = "thread-reply-submit";
+  submitBtn.id = "comment-reply-submit";
   submitBtn.type = "button";
   submitBtn.textContent = "Comment";
 
@@ -282,14 +282,14 @@ function showEditCommentModal(comment, threadId, container, isLocked, app) {
   backdrop.classList.add("modal-backdrop");
 
   const modal = document.createElement("div");
-  modal.id = "thread-edit-container";
+  modal.id = "comment-edit-container";
 
   const editText = document.createElement("textarea");
-  editText.id = "thread-edit-text";
+  editText.id = "comment-edit-text";
   editText.value = comment.content;
 
   const submitBtn = document.createElement("button");
-  submitBtn.id = "thread-edit-submit";
+  submitBtn.id = "comment-edit-submit";
   submitBtn.type = "button";
   submitBtn.textContent = "Comment";
 
