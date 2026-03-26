@@ -1276,11 +1276,13 @@ main > section > nav a:hover {
   align-items: center;
   justify-content: center;
 }
+
 #comment-reply-container > button:first-child:hover,
 #comment-edit-container > button:first-child:hover {
   color: var(--color-text);
   background-color: var(--color-primary-light);
 }
+
 #thread-like-toggle {
   background: none;
   border: none;
@@ -1293,18 +1295,111 @@ main > section > nav a:hover {
   line-height: normal;
   border-radius: var(--radius-sm);
 }
+
 #thread-like-toggle:hover {
   filter: brightness(1.3);
 }
+
 #thread-like-toggle::before {
   content: "\2665\FE0E  ";
   color: var(--color-text-muted);
 }
+
 #thread-like-toggle.liked::before {
   color: var(--color-accent);
 }
+
 .list-comment-container .list-comment-container {
   margin-left: 24px;
   padding-left: 19px;
   border-left: 2px solid var(--color-border);
+}
+
+/* responsive */
+
+@media (max-width: 768px) {
+  #thread-list-container {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  .content-area {
+    padding: 24px 19px;
+  }
+  #dashboard-container > header {
+    padding: 0 12px 0 0;
+  }
+  .header-left {
+    width: 280px;
+    padding: 0 14px;
+  }
+  #create-thread-button {
+    font-size: 0.8rem;
+    padding: 7px 14px;
+  }
+  #thread-title {
+    font-size: 1.35rem;
+  }
+  #profile-container > img {
+    width: 86px;
+    height: 86px;
+  }
+  #edit-thread-container,
+  #edit-profile-container,
+  #comment-reply-container,
+  #comment-edit-container {
+    width: 92%;
+    padding: 29px 24px;
+  }
+}
+
+/* mobile only */
+.mobile-back-button {
+  display: none;
+}
+@media (max-width: 480px) {
+  #thread-list-container {
+    width: 100%;
+    flex: 1;
+    max-height: none;
+    border-right: none;
+  }
+  .content-area {
+    display: none;
+  }
+  #dashboard-container.viewing-content #thread-list-container {
+    display: none;
+  }
+  #dashboard-container.viewing-content .content-area {
+    display: block;
+    flex: 1;
+  }
+  .header-left {
+    width: auto;
+    flex-shrink: 1;
+  }
+  .brand-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #dashboard-container.viewing-content .mobile-back-button {
+    display: flex;
+  }
+  #dashboard-container.viewing-content .brand-text,
+  #dashboard-container.viewing-content #create-thread-button {
+    display: none;
+  }
+  .mobile-back-button {
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+  }
 }
