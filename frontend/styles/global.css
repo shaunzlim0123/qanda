@@ -183,3 +183,73 @@ main {
   background-color: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.4);
 }
+
+.layout-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+#thread-list-container {
+  width: 360px;
+  flex-shrink: 0;
+  padding: 10px 0;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+}
+
+.content-area {
+  flex: 1;
+  padding: 34px 38px;
+  overflow-y: auto;
+}
+
+.dashboard-placeholder {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.dashboard-placeholder::before {
+  content: "\1F4AC";
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.dashboard-placeholder p {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* -- thread list -- */
+
+.list-thread-container {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 5px 6px;
+  align-items: baseline;
+  padding: 14px 19px;
+  max-height: 120px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.list-thread-container:hover {
+  background-color: var(--color-primary-light);
+}
+
+.list-thread-container.thread-private {
+  border-left-color: var(--color-accent);
+  background-color: rgba(224, 122, 95, 0.04);
+}
+
+.list-thread-container.thread-private:hover {
+  background-color: rgba(224, 122, 95, 0.09);
+}
