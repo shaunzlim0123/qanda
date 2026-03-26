@@ -1,5 +1,5 @@
 import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
-import { renderComments } from "./comments.js";
+import { renderComments, formatTimeSince } from "./comments.js";
 
 export function renderCreateThreadPage(app) {
   const section = document.createElement("section");
@@ -53,6 +53,35 @@ export function renderCreateThreadPage(app) {
 }
 
 export function renderThreadList(sidebar, app) {
+  // Offline: show only the cached thread in sidebar
+  if (!navigator.onLine) {
+    const cached = localStorage.getItem("cachedThread");
+    if (cached) {
+      const { thread, authorName, threadId } = JSON.parse(cached);
+      const threadBox = document.createElement("article");
+      threadBox.classList.add("list-thread-container");
+      threadBox.dataset.threadId = threadId;
+      const t = document.createElement("h3");
+      t.classList.add("list-thread-title");
+      t.textContent = thread.title;
+      const d = document.createElement("p");
+      d.classList.add("list-thread-date");
+      d.textContent = new Date(thread.createdAt).toLocaleDateString();
+      const a = document.createElement("p");
+      a.classList.add("list-thread-author");
+      a.textContent = authorName;
+      const l = document.createElement("p");
+      l.classList.add("list-thread-likes");
+      l.textContent = thread.likes.length;
+      threadBox.append(t, d, a, l);
+      threadBox.addEventListener("click", () =>
+        app.navigateTo("thread", threadId),
+      );
+      sidebar.appendChild(threadBox);
+    }
+    return;
+  }
+
   let start = 0;
   let loading = false;
   let allLoaded = false;
@@ -71,7 +100,7 @@ export function renderThreadList(sidebar, app) {
   }
 
   function loadThreads() {
-    if (loading || allLoaded) return;
+    if (loading || allLoaded || !navigator.onLine) return;
     loading = true;
     showLoader();
 
@@ -163,8 +192,23 @@ export function renderThreadList(sidebar, app) {
 }
 
 export function renderThreadContent(threadId, content, app) {
-  const container = document.createElement("div");
+  const container = document.createElement("article");
   container.id = "thread-container";
+
+  // Offline: show cached thread or error
+  if (!navigator.onLine) {
+    const cached = localStorage.getItem("cachedThread");
+    if (cached && JSON.parse(cached).threadId === threadId) {
+      renderCachedThread(container);
+    } else {
+      printErrorMessage(
+        "You are offline. Check your network connection and try again.",
+        container,
+      );
+    }
+    content.appendChild(container);
+    return;
+  }
 
   const token = localStorage.getItem("token");
 
@@ -179,6 +223,16 @@ export function renderThreadContent(threadId, content, app) {
         apiCall(`/user?userId=${currentUserId}`, "GET", null, token),
       ])
         .then(([userData, currentUserData]) => {
+          // Cache thread data for offline access
+          localStorage.setItem(
+            "cachedThread",
+            JSON.stringify({
+              thread,
+              authorName: userData.name,
+              threadId,
+            }),
+          );
+
           const title = document.createElement("h2");
           title.id = "thread-title";
           title.textContent = thread.title;
@@ -279,15 +333,19 @@ export function renderThreadContent(threadId, content, app) {
             deleteBtn.type = "button";
             deleteBtn.textContent = "Delete";
             deleteBtn.addEventListener("click", () => {
-              apiCall("/thread", "DELETE", { id: threadId }, token).then(() => {
-                const index = app.threadIDs.indexOf(threadId);
-                if (index !== -1) app.threadIDs.splice(index, 1);
-                app.contentArea = null;
-                if (app.threadIDs.length > 0) {
-                  app.navigateTo("thread", app.threadIDs[0]);
-                } else {
-                  app.navigateTo("dashboard");
-                }
+              showDeleteConfirmModal(() => {
+                apiCall("/thread", "DELETE", { id: threadId }, token).then(
+                  () => {
+                    const index = app.threadIDs.indexOf(threadId);
+                    if (index !== -1) app.threadIDs.splice(index, 1);
+                    app.contentArea = null;
+                    if (app.threadIDs.length > 0) {
+                      app.navigateTo("thread", app.threadIDs[0]);
+                    } else {
+                      app.navigateTo("dashboard");
+                    }
+                  },
+                );
               });
             });
             container.appendChild(deleteBtn);
