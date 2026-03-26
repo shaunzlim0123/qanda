@@ -1157,16 +1157,19 @@ main > section > nav a:hover {
   flex-direction: column;
   gap: 19px;
 }
+
 .modal-backdrop form > div {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
+
 .modal-backdrop form > div.checkbox-group {
   flex-direction: row;
   align-items: center;
   gap: 10px;
 }
+
 .modal-backdrop label {
   font-size: 0.8rem;
   font-weight: 500;
@@ -1174,6 +1177,7 @@ main > section > nav a:hover {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
 .modal-backdrop input[type="text"],
 .modal-backdrop input[type="password"] {
   padding: 12px 17px;
@@ -1184,6 +1188,7 @@ main > section > nav a:hover {
   color: var(--color-text);
   background-color: var(--color-surface);
 }
+
 .modal-backdrop input[type="text"]:focus,
 .modal-backdrop input[type="password"]:focus,
 .modal-backdrop textarea:focus {
@@ -1191,6 +1196,7 @@ main > section > nav a:hover {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(58, 80, 107, 0.12);
 }
+
 .modal-backdrop textarea {
   width: 100%;
   min-height: 120px;
@@ -1203,8 +1209,102 @@ main > section > nav a:hover {
   background-color: var(--color-surface);
   resize: vertical;
 }
+
 .modal-backdrop input[type="file"] {
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+
+#edit-thread-submit,
+#edit-profile-submit,
+#comment-reply-submit,
+#comment-edit-submit {
+  padding: 12px 24px;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--ease),
+    transform var(--ease);
+}
+
+#edit-thread-submit:hover,
+#edit-profile-submit:hover,
+#comment-reply-submit:hover,
+#comment-edit-submit:hover {
+  background-color: var(--color-accent-dark);
+  transform: translateY(-1px);
+}
+
+.modal-backdrop form > button:not([id]) {
+  padding: 12px 24px;
+  background: none;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.modal-backdrop form > button:not([id]):hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
+
+#comment-reply-container > button:first-child,
+#comment-edit-container > button:first-child {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#comment-reply-container > button:first-child:hover,
+#comment-edit-container > button:first-child:hover {
+  color: var(--color-text);
+  background-color: var(--color-primary-light);
+}
+#thread-like-toggle {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 5px 2px 5px 7px;
+  margin-bottom: 14px;
+  line-height: normal;
+  border-radius: var(--radius-sm);
+}
+#thread-like-toggle:hover {
+  filter: brightness(1.3);
+}
+#thread-like-toggle::before {
+  content: "\2665\FE0E  ";
+  color: var(--color-text-muted);
+}
+#thread-like-toggle.liked::before {
+  color: var(--color-accent);
+}
+.list-comment-container .list-comment-container {
+  margin-left: 24px;
+  padding-left: 19px;
+  border-left: 2px solid var(--color-border);
 }
