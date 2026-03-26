@@ -1,19 +1,9 @@
-import { apiCall, printErrorMessage } from "./helpers.js";
-
-export function formatTimeSince(createdAt) {
-  const time = Math.floor((Date.now() - new Date(createdAt)) / 1000);
-  if (time < 60) {
-    return "Just now";
-  } else if (time < 3600) {
-    return `${Math.floor(time / 60)} minute(s) ago`;
-  } else if (time < 86400) {
-    return `${Math.floor(time / 3600)} hour(s) ago`;
-  } else if (time < 604800) {
-    return `${Math.floor(time / 86400)} day(s) ago`;
-  } else {
-    return `${Math.floor(time / 604800)} week(s) ago`;
-  }
-}
+import {
+  apiCall,
+  printErrorMessage,
+  getCurrentUserId,
+  formatTimeSince,
+} from "./helpers.js";
 
 export function renderComments(threadId, container, isLocked, app) {
   const commentList = document.createElement("section");
@@ -25,9 +15,7 @@ export function renderComments(threadId, container, isLocked, app) {
   apiCall(`/comments?threadId=${threadId}`, "GET", null, token)
     .then((comments) => {
       // Current user identity (for admin/creator checks)
-      const currentUserId = Number(
-        JSON.parse(atob(token.split(".")[1])).userId,
-      );
+      const currentUserId = getCurrentUserId(token);
 
       // Fetch all unique users in parallel (include current user for admin check)
       const userIds = [

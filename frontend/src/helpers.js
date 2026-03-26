@@ -45,7 +45,9 @@ export const apiCall = (path, method, body, token) => {
   }
 
   if (!navigator.onLine) {
-    return Promise.reject("You are offline. Please check your internet connection.");
+    return Promise.reject(
+      "You are offline. Please check your internet connection.",
+    );
   }
 
   return fetch(`http://localhost:${BACKEND_PORT}${path}`, options)
@@ -95,4 +97,43 @@ export function printErrorMessage(message, parentElement) {
   errorContainer.appendChild(errorMsg);
   errorContainer.appendChild(errorClose);
   parentElement.appendChild(errorContainer);
+}
+
+export function getCurrentUserId(token) {
+  return Number(JSON.parse(atob(token.split(".")[1])).userId);
+}
+
+export function formatTimeSince(createdAt) {
+  const time = Math.floor((Date.now() - new Date(createdAt)) / 1000);
+  if (time < 60) return "Just now";
+  if (time < 3600) return `${Math.floor(time / 60)} minute(s) ago`;
+  if (time < 86400) return `${Math.floor(time / 3600)} hour(s) ago`;
+  if (time < 604800) return `${Math.floor(time / 86400)} day(s) ago`;
+  return `${Math.floor(time / 604800)} week(s) ago`;
+}
+
+export function updateHash(page, data) {
+  let hash = "";
+  if (page === "thread" && data) {
+    hash = `#thread=${data}`;
+  } else if (page === "profile") {
+    const token = localStorage.getItem("token");
+    hash = data === getCurrentUserId(token) ? "#profile" : `#profile=${data}`;
+  }
+  // prevent infinite loop of updating hash
+  if (location.hash !== hash) location.hash = hash;
+}
+
+export function parseHash() {
+  const hash = location.hash;
+  if (hash.startsWith("#thread=")) {
+    return { page: "thread", data: Number(hash.split("=")[1]) };
+  } else if (hash.startsWith("#profile=")) {
+    return { page: "profile", data: Number(hash.split("=")[1]) };
+  } else if (hash === "#profile") {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    return { page: "profile", data: getCurrentUserId(token) };
+  }
+  return null;
 }

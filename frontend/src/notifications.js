@@ -1,4 +1,4 @@
-import { apiCall } from "./helpers.js";
+import { apiCall, getCurrentUserId } from "./helpers.js";
 
 export function startNotificationPolling(app) {
   seeded = false;
@@ -80,7 +80,7 @@ function showPing(threadTitle, threadId, app) {
 function pollWatchedThreads(app) {
   if (!navigator.onLine) return;
   const token = localStorage.getItem("token");
-  const currentUserId = Number(JSON.parse(atob(token.split(".")[1])).userId);
+  const currentUserId = getCurrentUserId(token);
 
   apiCall("/user?userId=" + currentUserId, "GET", null, token)
     .then((userData) => {

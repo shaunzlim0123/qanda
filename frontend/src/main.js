@@ -9,6 +9,7 @@ import {
   startNotificationPolling,
   stopNotificationPolling,
 } from "./notifications.js";
+import { updateHash, parseHash, getCurrentUserId } from "./helpers.js";
 
 // app state shared across pages
 const app = {
@@ -18,6 +19,7 @@ const app = {
   navigateTo: null,
   lastPage: "dashboard",
   lastData: null,
+  pollInterval: null,
 };
 
 function clearMain() {
@@ -67,6 +69,10 @@ function renderContentPage(page, data) {
 }
 
 function navigateTo(page, data) {
+  if (page === "thread" || page === "profile") {
+    updateHash(page, data);
+  }
+
   if (
     app.contentArea &&
     page !== "login" &&
@@ -95,6 +101,11 @@ function navigateTo(page, data) {
   }
 }
 app.navigateTo = navigateTo;
+
+window.addEventListener("hashchange", () => {
+  const parsed = parseHash();
+  if (parsed) navigateTo(parsed.page, parsed.data);
+});
 
 function renderAuthenticatedLayout(page, data) {
   const wrapper = document.createElement("div");
@@ -139,8 +150,7 @@ function renderAuthenticatedLayout(page, data) {
   myProfile.textContent = "My Profile";
   myProfile.addEventListener("click", () => {
     const token = localStorage.getItem("token");
-    const currentUserId = Number(JSON.parse(atob(token.split(".")[1])).userId);
-    navigateTo("profile", currentUserId);
+    navigateTo("profile", getCurrentUserId(token));
   });
   header.appendChild(myProfile);
 
@@ -188,10 +198,12 @@ function renderDashboardContent(content) {
   content.appendChild(placeholder);
 }
 
-// Bootstrap
+// Bootstrap — check URL hash first, then fall back to defaults
 if (localStorage.getItem("token")) {
-  if (!navigator.onLine && localStorage.getItem("cachedThread")) {
-    // Offline with cached data: show last viewed thread
+  const hashRoute = parseHash();
+  if (hashRoute) {
+    navigateTo(hashRoute.page, hashRoute.data);
+  } else if (!navigator.onLine && localStorage.getItem("cachedThread")) {
     const cached = JSON.parse(localStorage.getItem("cachedThread"));
     navigateTo("thread", cached.threadId);
   } else {

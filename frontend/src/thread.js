@@ -1,5 +1,11 @@
-import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
-import { renderComments, formatTimeSince } from "./comments.js";
+import {
+  createLabeledInput,
+  apiCall,
+  printErrorMessage,
+  getCurrentUserId,
+  formatTimeSince,
+} from "./helpers.js";
+import { renderComments } from "./comments.js";
 
 export function renderCreateThreadPage(app) {
   const section = document.createElement("section");
@@ -214,9 +220,7 @@ export function renderThreadContent(threadId, content, app) {
 
   apiCall(`/thread?id=${threadId}`, "GET", null, token)
     .then((thread) => {
-      const currentUserId = Number(
-        JSON.parse(atob(token.split(".")[1])).userId,
-      );
+      const currentUserId = getCurrentUserId(token);
 
       return Promise.all([
         apiCall(`/user?userId=${thread.creatorId}`, "GET", null, token),

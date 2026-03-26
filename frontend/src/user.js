@@ -3,6 +3,7 @@ import {
   createLabeledInput,
   fileToDataUrl,
   printErrorMessage,
+  getCurrentUserId,
 } from "./helpers.js";
 
 export function renderProfileContent(userId, content, app) {
@@ -11,7 +12,7 @@ export function renderProfileContent(userId, content, app) {
   content.appendChild(container);
 
   const token = localStorage.getItem("token");
-  const currentUserId = Number(JSON.parse(atob(token.split(".")[1])).userId);
+  const currentUserId = getCurrentUserId(token);
 
   const profileFetch = apiCall(`/user?userId=${userId}`, "GET", null, token);
   const currentUserFetch =
