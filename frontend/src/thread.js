@@ -526,6 +526,46 @@ function renderCachedThread(container) {
   const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
   const byOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
   topLevel.sort(byNewest);
+
+  function renderComment(comment, parent) {
+    const user = userMap[comment.creatorId] || { name: "Unknown", image: "" };
+    const box = document.createElement("article");
+    box.classList.add("list-comment-container");
+
+    const header = document.createElement("header");
+    header.classList.add("comment-header");
+    if (user.image) {
+      const img = document.createElement("img");
+      img.classList.add("list-comment-profile");
+      img.src = user.image;
+      img.alt = user.name;
+      header.appendChild(img);
+    }
+    const name = document.createElement("span");
+    name.classList.add("list-comment-author");
+    name.textContent = user.name;
+    const date = document.createElement("p");
+    date.classList.add("list-comment-date");
+    date.textContent = formatTimeSince(comment.createdAt);
+    header.append(name, date);
+    box.appendChild(header);
+
+    const text = document.createElement("p");
+    text.classList.add("list-comment-body");
+    text.textContent = comment.content;
+    const cl = document.createElement("p");
+    cl.classList.add("list-comment-likes");
+    cl.textContent = comment.likes.length;
+    box.append(text, cl);
+
+    parent.appendChild(box);
+
+    const children = childrenMap[comment.id] || [];
+    children.sort(byOldest);
+    children.forEach((child) => renderComment(child, box));
+  }
+
+  topLevel.forEach((c) => renderComment(c, commentList));
 }
 
 function showEditThreadModal(threadId, app) {
