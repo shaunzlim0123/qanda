@@ -6,9 +6,8 @@ import {
 } from "./helpers.js";
 
 export function renderProfileContent(userId, content, app) {
-  const container = document.createElement("div");
+  const container = document.createElement("section");
   container.id = "profile-container";
-  container.classList.add("profile-container");
   content.appendChild(container);
 
   const token = localStorage.getItem("token");
@@ -52,6 +51,9 @@ export function renderProfileContent(userId, content, app) {
       }
 
       if (currentUserData.admin && userId !== currentUserId) {
+        const adminRow = document.createElement("div");
+        adminRow.classList.add("admin-permission-row");
+
         const adminPermission = document.createElement("select");
         adminPermission.id = "user-permission";
 
@@ -64,7 +66,7 @@ export function renderProfileContent(userId, content, app) {
         adminPermission.appendChild(userOption);
         adminPermission.appendChild(adminOption);
         adminPermission.value = userData.admin ? "Admin" : "User";
-        container.appendChild(adminPermission);
+        adminRow.appendChild(adminPermission);
 
         const updateAdmin = document.createElement("button");
         updateAdmin.id = "user-permission-submit";
@@ -80,10 +82,11 @@ export function renderProfileContent(userId, content, app) {
               printErrorMessage(err, container);
             });
         });
-        container.appendChild(updateAdmin);
+        adminRow.appendChild(updateAdmin);
+        container.appendChild(adminRow);
       }
 
-      const threadList = document.createElement("div");
+      const threadList = document.createElement("section");
       threadList.id = "profile-thread-list";
       container.appendChild(threadList);
 
@@ -104,8 +107,8 @@ export function renderProfileContent(userId, content, app) {
 
             return Promise.all(commentPromises).then((commentsArrays) => {
               userThreads.forEach((thread, index) => {
-                const threadBox = document.createElement("div");
-                threadBox.id = "profile-thread-container";
+                const threadBox = document.createElement("article");
+                threadBox.classList.add("profile-thread-container");
 
                 const title = document.createElement("h3");
                 title.classList.add("profile-thread-title");
@@ -184,9 +187,12 @@ function showEditProfileModal(userId, app) {
 
     imagePromise
       .then((image) => {
-        const body = { email, name };
+        const body = {};
+        if (email && email !== modal.dataset.originalEmail) body.email = email;
+        if (name && name !== modal.dataset.originalName) body.name = name;
         if (password) body.password = password;
         if (image) body.image = image;
+        if (Object.keys(body).length === 0) return;
         return apiCall("/user", "PUT", body, token);
       })
       .then(() => {
@@ -211,11 +217,13 @@ function showEditProfileModal(userId, app) {
   backdrop.appendChild(modal);
   document.body.appendChild(backdrop);
 
-  // Pre-populate fields from current user data
+  // Pre-populate fields and store originals for diffing
   apiCall(`/user?userId=${userId}`, "GET", null, token)
     .then((userData) => {
       document.getElementById("edit-profile-email").value = userData.email;
       document.getElementById("edit-profile-name").value = userData.name;
+      modal.dataset.originalEmail = userData.email;
+      modal.dataset.originalName = userData.name;
     })
     .catch((err) => {
       printErrorMessage(err, modal);
