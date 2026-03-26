@@ -41,7 +41,22 @@ function clearContent() {
   }
 }
 
+function isMobile() {
+  return window.matchMedia("(max-width: 480px)").matches;
+}
+
+function updateMobileView(page) {
+  const wrapper = document.getElementById("dashboard-container");
+  if (!wrapper) return;
+  if (isMobile() && page !== "dashboard") {
+    wrapper.classList.add("viewing-content");
+  } else {
+    wrapper.classList.remove("viewing-content");
+  }
+}
+
 function renderContentPage(page, data) {
+  updateMobileView(page);
   if (page === "dashboard") {
     renderDashboardContent(app.contentArea);
   } else if (page === "thread") {
@@ -90,15 +105,27 @@ function renderAuthenticatedLayout(page, data) {
   const headerLeft = document.createElement("div");
   headerLeft.classList.add("header-left");
 
-  const brand = document.createElement("span");
+  const backBtn = document.createElement("button");
+  backBtn.type = "button";
+  backBtn.classList.add("mobile-back-button");
+  backBtn.textContent = "\u2190 Back";
+  backBtn.addEventListener("click", () => {
+    navigateTo("dashboard");
+  });
+  headerLeft.appendChild(backBtn);
+
+  const brand = document.createElement("button");
   brand.classList.add("brand-text");
   brand.textContent = "Qanda";
+  brand.addEventListener("click", () => {
+    navigateTo("dashboard");
+  });
   headerLeft.appendChild(brand);
 
   const createBtn = document.createElement("button");
   createBtn.id = "create-thread-button";
   createBtn.type = "button";
-  createBtn.textContent = "Create Thread";
+  createBtn.textContent = "Create";
   createBtn.addEventListener("click", () => {
     navigateTo("create-thread");
   });
@@ -155,7 +182,7 @@ function renderDashboardContent(content) {
   placeholder.classList.add("dashboard-placeholder");
 
   const msg = document.createElement("p");
-  msg.textContent = "Select a thread";
+  msg.textContent = "Select Thread";
   placeholder.appendChild(msg);
 
   content.appendChild(placeholder);
@@ -163,7 +190,13 @@ function renderDashboardContent(content) {
 
 // Bootstrap
 if (localStorage.getItem("token")) {
-  navigateTo("dashboard");
+  if (!navigator.onLine && localStorage.getItem("cachedThread")) {
+    // Offline with cached data: show last viewed thread
+    const cached = JSON.parse(localStorage.getItem("cachedThread"));
+    navigateTo("thread", cached.threadId);
+  } else {
+    navigateTo("dashboard");
+  }
 } else {
   navigateTo("login");
 }
