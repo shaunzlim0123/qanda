@@ -1109,3 +1109,102 @@ main > section > nav a:hover {
 .delete-confirm-btn:hover {
   background-color: #c0383c;
 }
+
+/* modals */
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+#edit-thread-container,
+#edit-profile-container,
+#comment-reply-container,
+#comment-edit-container {
+  position: relative;
+  background-color: var(--color-surface);
+  padding: 34px;
+  border-radius: var(--radius-lg);
+  width: 600px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: card-enter 0.25s ease-out;
+}
+
+#comment-reply-container,
+#comment-edit-container {
+  width: 504px;
+  padding-top: 48px;
+}
+
+.modal-backdrop h2 {
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+}
+
+.modal-backdrop form {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+.modal-backdrop form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.modal-backdrop form > div.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.modal-backdrop label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.modal-backdrop input[type="text"],
+.modal-backdrop input[type="password"] {
+  padding: 12px 17px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+.modal-backdrop input[type="text"]:focus,
+.modal-backdrop input[type="password"]:focus,
+.modal-backdrop textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(58, 80, 107, 0.12);
+}
+.modal-backdrop textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 17px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  resize: vertical;
+}
+.modal-backdrop input[type="file"] {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
