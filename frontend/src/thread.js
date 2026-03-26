@@ -656,3 +656,59 @@ function showEditThreadModal(threadId, app) {
       printErrorMessage(err, modal);
     });
 }
+
+function showDeleteConfirmModal(onConfirm) {
+  const backdrop = document.createElement("div");
+  backdrop.classList.add("modal-backdrop");
+
+  const dialog = document.createElement("div");
+  dialog.classList.add("delete-confirm-dialog");
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.classList.add("card-close-btn");
+  closeBtn.textContent = "x";
+  closeBtn.addEventListener("click", () => backdrop.remove());
+
+  const icon = document.createElement("div");
+  icon.classList.add("delete-confirm-icon");
+  icon.textContent = "\uD83D\uDDD1\uFE0F";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Delete Thread";
+
+  const message = document.createElement("p");
+  message.textContent = "Are you sure you would like to do this?";
+
+  const actions = document.createElement("div");
+  actions.classList.add("delete-confirm-actions");
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.addEventListener("click", () => backdrop.remove());
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.classList.add("delete-confirm-btn");
+  confirmBtn.textContent = "Confirm";
+  confirmBtn.addEventListener("click", () => {
+    backdrop.remove();
+    onConfirm();
+  });
+
+  actions.appendChild(cancelBtn);
+  actions.appendChild(confirmBtn);
+  dialog.appendChild(closeBtn);
+  dialog.appendChild(icon);
+  dialog.appendChild(heading);
+  dialog.appendChild(message);
+  dialog.appendChild(actions);
+  backdrop.appendChild(dialog);
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) backdrop.remove();
+  });
+
+  document.body.appendChild(backdrop);
+}
