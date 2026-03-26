@@ -253,3 +253,96 @@ main {
 .list-thread-container.thread-private:hover {
   background-color: rgba(224, 122, 95, 0.09);
 }
+
+.list-thread-title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-thread-author {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.list-thread-date {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.list-thread-likes {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.list-thread-likes::before {
+  content: "\2665  ";
+  color: var(--color-accent);
+}
+
+.thread-list-loader {
+  text-align: center;
+  padding: 14px 19px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  display: none;
+}
+
+.thread-list-loader.visible {
+  display: block;
+}
+
+/* thread view */
+
+#thread-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 864px;
+  margin: 0 auto;
+}
+
+.offline-banner {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+#thread-title,
+#thread-author,
+#thread-body,
+#comment-list-container,
+#thread-comment-text,
+#thread-comment-submit,
+#thread-container > #error-container {
+  width: 100%;
+}
+
+#thread-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 7px;
+}
