@@ -391,6 +391,7 @@ export function renderThreadContent(threadId, content, app) {
           let lastCommentCount = null;
 
           app.pollInterval = setInterval(() => {
+            if (!navigator.onLine) return;
             apiCall(`/thread?id=${threadId}`, "GET", null, token).then(
               (latest) => {
                 const likeBtn = document.getElementById("thread-like-toggle");
@@ -454,10 +455,77 @@ export function renderThreadContent(threadId, content, app) {
         });
     })
     .catch((err) => {
-      printErrorMessage(err, content);
+      if (!navigator.onLine) {
+        renderCachedThread(container);
+      } else {
+        printErrorMessage(err, content);
+      }
     });
 
   content.appendChild(container);
+}
+
+function renderCachedThread(container) {
+  const cached = localStorage.getItem("cachedThread");
+  if (!cached) {
+    printErrorMessage(
+      "You are offline and no cached thread is available.",
+      container,
+    );
+    return;
+  }
+
+  const { thread, authorName } = JSON.parse(cached);
+
+  const banner = document.createElement("p");
+  banner.classList.add("offline-banner");
+  banner.textContent = "You are offline \u2014 READ ONLY";
+  container.appendChild(banner);
+
+  const title = document.createElement("h2");
+  title.id = "thread-title";
+  title.textContent = thread.title;
+
+  const author = document.createElement("p");
+  author.id = "thread-author";
+  author.textContent = authorName;
+
+  const body = document.createElement("p");
+  body.id = "thread-body";
+  body.textContent = thread.content;
+
+  const likeWrapper = document.createElement("span");
+  likeWrapper.id = "thread-like-toggle";
+  likeWrapper.classList.add("liked");
+  const likes = document.createElement("span");
+  likes.id = "thread-likes";
+  likes.textContent = thread.likes.length;
+  likeWrapper.appendChild(likes);
+
+  container.append(title, author, body, likeWrapper);
+
+  // render cached comments
+  const cachedComments = localStorage.getItem("cachedComments");
+  if (!cachedComments) return;
+
+  const { comments, userMap } = JSON.parse(cachedComments);
+  const commentList = document.createElement("section");
+  commentList.id = "comment-list-container";
+  container.appendChild(commentList);
+
+  const childrenMap = {};
+  const topLevel = [];
+  for (const c of comments) {
+    if (c.parentCommentId === null) {
+      topLevel.push(c);
+    } else {
+      (childrenMap[c.parentCommentId] ||= []).push(c);
+    }
+  }
+
+  const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+  const byOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+  topLevel.sort(byNewest);
 }
 
 function showEditThreadModal(threadId, app) {
