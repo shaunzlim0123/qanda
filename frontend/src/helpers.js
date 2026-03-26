@@ -44,6 +44,10 @@ export const apiCall = (path, method, body, token) => {
     options.body = JSON.stringify(body);
   }
 
+  if (!navigator.onLine) {
+    return Promise.reject("You are offline. Please check your internet connection.");
+  }
+
   return fetch(`http://localhost:${BACKEND_PORT}${path}`, options)
     .then((response) => response.json())
     .then((data) => {
@@ -56,6 +60,7 @@ export const apiCall = (path, method, body, token) => {
 
 export function createLabeledInput(type, id, labelText) {
   const container = document.createElement("div");
+  if (type === "checkbox") container.classList.add("checkbox-group");
 
   const label = document.createElement("label");
   label.textContent = labelText;
