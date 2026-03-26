@@ -710,6 +710,7 @@ main {
   margin-bottom: 5px;
   color: var(--color-text);
 }
+
 .profile-thread-content {
   font-size: 0.875rem;
   color: var(--color-text-muted);
@@ -717,4 +718,93 @@ main {
   margin-bottom: 7px;
   max-height: 3em;
   overflow: hidden;
+}
+
+.profile-thread-likes,
+.profile-thread-comments {
+  display: inline;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.profile-thread-likes::before {
+  content: "\2665  ";
+  color: var(--color-accent);
+}
+
+.profile-thread-likes::after {
+  content: "  \00b7  ";
+}
+
+.profile-thread-comments::before {
+  content: "\1F4AC  ";
+}
+
+/* auth pages */
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main > section {
+  position: relative;
+  width: 100%;
+  max-width: 504px;
+  padding: 48px 38px;
+  margin: 29px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: card-enter 0.35s ease-out;
+}
+
+.card-close-btn {
+  position: absolute;
+  top: 17px;
+  right: 17px;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-close-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-primary-light);
+}
+
+main > section > h2 {
+  text-align: center;
+  margin-bottom: 34px;
+  letter-spacing: -0.02em;
+}
+
+main > section > h2::before {
+  content: "Q";
+  display: block;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 17px;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  line-height: 62px;
+  text-align: center;
+  border-radius: var(--radius-lg);
 }
