@@ -78,9 +78,8 @@ function showPing(threadTitle, threadId, app) {
 }
 
 function pollWatchedThreads(app) {
+  if (!navigator.onLine) return;
   const token = localStorage.getItem("token");
-  if (!token) return;
-
   const currentUserId = Number(JSON.parse(atob(token.split(".")[1])).userId);
 
   apiCall("/user?userId=" + currentUserId, "GET", null, token)
