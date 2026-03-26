@@ -808,3 +808,96 @@ main > section > h2::before {
   text-align: center;
   border-radius: var(--radius-lg);
 }
+
+/* form inputs */
+main > section > form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+main > section > form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+main > section > form > div.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+main > section > form label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+main > section > form input[type="text"],
+main > section > form input[type="password"] {
+  padding: 12px 17px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
+main > section > form input[type="text"]:focus,
+main > section > form input[type="password"]:focus,
+main > section > form textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(58, 80, 107, 0.12);
+}
+
+main > section > form textarea {
+  width: 100%;
+  min-height: 144px;
+  padding: 12px 17px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  resize: vertical;
+}
+
+#login-submit,
+#register-submit,
+#create-thread-submit {
+  padding: 14px;
+  margin-top: 5px;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--ease),
+    transform var(--ease),
+    box-shadow var(--ease);
+}
+
+#login-submit:hover,
+#register-submit:hover,
+#create-thread-submit:hover {
+  background-color: var(--color-accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(224, 122, 95, 0.3);
+}
+
+#login-submit:active,
+#register-submit:active,
+#create-thread-submit:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
