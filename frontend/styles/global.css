@@ -1402,4 +1402,95 @@ main > section > nav a:hover {
     padding: 8px 12px;
     border-radius: var(--radius-md);
   }
+  .mobile-back-button:hover {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  main > section {
+    margin: 19px;
+    padding: 34px 24px;
+  }
+
+  main > section > h2 {
+    font-size: 1.5rem;
+  }
+
+  main > section > h2::before {
+    width: 53px;
+    height: 53px;
+    font-size: 1.4rem;
+    line-height: 53px;
+  }
+
+  #dashboard-container > header {
+    gap: 5px;
+    padding: 0 14px 0 0;
+  }
+
+  .header-left {
+    padding: 0 14px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  #create-thread-button,
+  #avatar-label,
+  #logout-button {
+    font-size: 0.78rem;
+    padding: 7px 12px;
+  }
+
+  #thread-list-container {
+    padding: 5px 0;
+  }
+
+  .content-area {
+    padding: 19px 14px;
+  }
+
+  #thread-title {
+    font-size: 1.2rem;
+  }
+
+  #thread-body {
+    font-size: 0.925rem;
+  }
+
+  #thread-edit-button,
+  #thread-delete-button,
+  #thread-watch-toggle {
+    padding: 7px 14px;
+    font-size: 0.8rem;
+  }
+
+  .list-comment-container .list-comment-container {
+    margin-left: 14px;
+    padding-left: 12px;
+  }
+
+  #profile-container > img {
+    width: 77px;
+    height: 77px;
+  }
+
+  #profile-container > h2 {
+    font-size: 1.25rem;
+  }
+
+  #edit-thread-container,
+  #edit-profile-container,
+  #comment-reply-container,
+  #comment-edit-container {
+    width: 95%;
+    padding: 24px 19px;
+    max-height: 85vh;
+  }
+
+  #error-container {
+    padding: 12px 14px;
+    gap: 10px;
+  }
 }
