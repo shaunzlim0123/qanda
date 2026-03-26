@@ -1,6 +1,6 @@
 import { apiCall, printErrorMessage } from "./helpers.js";
 
-function formatTimeSince(createdAt) {
+export function formatTimeSince(createdAt) {
   const time = Math.floor((Date.now() - new Date(createdAt)) / 1000);
   if (time < 60) {
     return "Just now";
@@ -16,7 +16,7 @@ function formatTimeSince(createdAt) {
 }
 
 export function renderComments(threadId, container, isLocked, app) {
-  const commentList = document.createElement("div");
+  const commentList = document.createElement("section");
   commentList.id = "comment-list-container";
   container.appendChild(commentList);
 
@@ -44,6 +44,12 @@ export function renderComments(threadId, container, isLocked, app) {
           userMap[id] = users[index];
         });
 
+        // Cache comments for offline access
+        localStorage.setItem(
+          "cachedComments",
+          JSON.stringify({ comments, userMap }),
+        );
+
         // Build parent -> children map
         const childrenMap = {};
         const topLevel = [];
@@ -58,9 +64,12 @@ export function renderComments(threadId, container, isLocked, app) {
           }
         });
 
-        // Sort reverse chronological (newest first)
+        // Top-level: reverse chronological (newest first)
+        // Nested: chronological (oldest first)
         const sortByNewest = (a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt);
+        const sortByOldest = (a, b) =>
+          new Date(a.createdAt) - new Date(b.createdAt);
         topLevel.sort(sortByNewest);
 
         // Recursively render a comment and its children
@@ -96,7 +105,7 @@ export function renderComments(threadId, container, isLocked, app) {
           likes.textContent = comment.likes.length;
 
           // avatar + author + date
-          const header = document.createElement("div");
+          const header = document.createElement("header");
           header.classList.add("comment-header");
           header.appendChild(profilePic);
           header.appendChild(authorName);
@@ -179,7 +188,7 @@ export function renderComments(threadId, container, isLocked, app) {
 
           // Render nested children inside this comment
           const children = childrenMap[comment.id] || [];
-          children.sort(sortByNewest);
+          children.sort(sortByOldest);
           children.forEach((child) => {
             renderComment(child, commentBox);
           });
