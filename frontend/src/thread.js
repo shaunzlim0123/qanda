@@ -64,22 +64,9 @@ export function renderThreadList(sidebar, app) {
     const cached = localStorage.getItem("cachedThread");
     if (cached) {
       const { thread, authorName, threadId } = JSON.parse(cached);
-      const threadBox = document.createElement("article");
-      threadBox.classList.add("list-thread-container");
-      threadBox.dataset.threadId = threadId;
-      const t = document.createElement("h3");
-      t.classList.add("list-thread-title");
-      t.textContent = thread.title;
-      const d = document.createElement("p");
-      d.classList.add("list-thread-date");
-      d.textContent = new Date(thread.createdAt).toLocaleDateString();
-      const a = document.createElement("p");
-      a.classList.add("list-thread-author");
-      a.textContent = authorName;
-      const l = document.createElement("p");
-      l.classList.add("list-thread-likes");
-      l.textContent = thread.likes.length;
-      threadBox.append(t, d, a, l);
+
+      const threadBox = createThreadListItem(thread, authorName, threadId);
+
       threadBox.addEventListener("click", () =>
         app.navigateTo("thread", threadId),
       );
@@ -126,33 +113,14 @@ export function renderThreadList(sidebar, app) {
         return Promise.all(authorPromises).then((authors) => {
           threads.forEach((thread, index) => {
             app.threadIDs.push(thread.id);
-            const threadBox = document.createElement("article");
-            threadBox.classList.add("list-thread-container");
-            threadBox.dataset.threadId = thread.id;
+            const threadBox = createThreadListItem(
+              thread,
+              authors[index].name,
+              thread.id,
+            );
             if (!thread.isPublic) {
               threadBox.classList.add("thread-private");
             }
-
-            const title = document.createElement("h3");
-            title.classList.add("list-thread-title");
-            title.textContent = thread.title;
-
-            const date = document.createElement("p");
-            date.classList.add("list-thread-date");
-            date.textContent = new Date(thread.createdAt).toLocaleDateString();
-
-            const author = document.createElement("p");
-            author.classList.add("list-thread-author");
-            author.textContent = authors[index].name;
-
-            const likes = document.createElement("p");
-            likes.classList.add("list-thread-likes");
-            likes.textContent = thread.likes.length;
-
-            threadBox.appendChild(title);
-            threadBox.appendChild(date);
-            threadBox.appendChild(author);
-            threadBox.appendChild(likes);
             threadBox.addEventListener("click", () => {
               app.navigateTo("thread", thread.id);
             });
@@ -469,6 +437,35 @@ export function renderThreadContent(threadId, content, app) {
   content.appendChild(container);
 }
 
+function createThreadListItem(thread, authorName, threadId) {
+  const threadBox = document.createElement("article");
+  threadBox.classList.add("list-thread-container");
+  threadBox.dataset.threadId = threadId;
+
+  const title = document.createElement("h3");
+  title.classList.add("list-thread-title");
+  title.textContent = thread.title;
+
+  const date = document.createElement("p");
+  date.classList.add("list-thread-date");
+  date.textContent = new Date(thread.createdAt).toLocaleDateString();
+
+  const author = document.createElement("p");
+  author.classList.add("list-thread-author");
+  author.textContent = authorName;
+
+  const likes = document.createElement("p");
+  likes.classList.add("list-thread-likes");
+  likes.textContent = thread.likes.length;
+
+  threadBox.appendChild(title);
+  threadBox.appendChild(date);
+  threadBox.appendChild(author);
+  threadBox.appendChild(likes);
+
+  return threadBox;
+}
+
 function renderCachedThread(container) {
   const cached = localStorage.getItem("cachedThread");
   if (!cached) {
@@ -506,7 +503,10 @@ function renderCachedThread(container) {
   likes.textContent = thread.likes.length;
   likeWrapper.appendChild(likes);
 
-  container.append(title, author, body, likeWrapper);
+  container.appendChild(title);
+  container.appendChild(author);
+  container.appendChild(body);
+  container.appendChild(likeWrapper);
 
   // render cached comments
   const cachedComments = localStorage.getItem("cachedComments");
@@ -519,17 +519,20 @@ function renderCachedThread(container) {
 
   const childrenMap = {};
   const topLevel = [];
-  for (const c of comments) {
-    if (c.parentCommentId === null) {
-      topLevel.push(c);
+  comments.forEach((comment) => {
+    if (comment.parentCommentId === null) {
+      topLevel.push(comment);
     } else {
-      (childrenMap[c.parentCommentId] ||= []).push(c);
+      if (!childrenMap[comment.parentCommentId]) {
+        childrenMap[comment.parentCommentId] = [];
+      }
+      childrenMap[comment.parentCommentId].push(comment);
     }
-  }
+  });
 
-  const byNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
-  const byOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
-  topLevel.sort(byNewest);
+  const sortByNewest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+  const sortByOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+  topLevel.sort(sortByNewest);
 
   function renderComment(comment, parent) {
     const user = userMap[comment.creatorId] || { name: "Unknown", image: "" };
@@ -551,25 +554,27 @@ function renderCachedThread(container) {
     const date = document.createElement("p");
     date.classList.add("list-comment-date");
     date.textContent = formatTimeSince(comment.createdAt);
-    header.append(name, date);
+    header.appendChild(name);
+    header.appendChild(date);
     box.appendChild(header);
 
-    const text = document.createElement("p");
-    text.classList.add("list-comment-body");
-    text.textContent = comment.content;
-    const cl = document.createElement("p");
-    cl.classList.add("list-comment-likes");
-    cl.textContent = comment.likes.length;
-    box.append(text, cl);
+    const body = document.createElement("p");
+    body.classList.add("list-comment-body");
+    body.textContent = comment.content;
+    const likes = document.createElement("p");
+    likes.classList.add("list-comment-likes");
+    likes.textContent = comment.likes.length;
+    box.appendChild(body);
+    box.appendChild(likes);
 
     parent.appendChild(box);
 
     const children = childrenMap[comment.id] || [];
-    children.sort(byOldest);
+    children.sort(sortByOldest);
     children.forEach((child) => renderComment(child, box));
   }
 
-  topLevel.forEach((c) => renderComment(c, commentList));
+  topLevel.forEach((comment) => renderComment(comment, commentList));
 }
 
 function showEditThreadModal(threadId, app) {
