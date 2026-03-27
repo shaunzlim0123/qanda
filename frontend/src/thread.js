@@ -376,14 +376,22 @@ export function renderThreadContent(threadId, content, app) {
                 }
                 const likesEl = document.getElementById("thread-likes");
                 if (likesEl) likesEl.textContent = latest.likes.length;
-                const sidebarLikes = document.querySelector(
-                  `.list-thread-container[data-thread-id="${threadId}"] .list-thread-likes`,
-                );
-                if (sidebarLikes) {
-                  sidebarLikes.textContent = latest.likes.length;
-                }
               },
             );
+
+            // update sidebar likes for all threads
+            app.threadIDs.forEach((id) => {
+              apiCall(`/thread?id=${id}`, "GET", null, token).then(
+                (threadData) => {
+                  const sidebarLikes = document.querySelector(
+                    `.list-thread-container[data-thread-id="${id}"] .list-thread-likes`,
+                  );
+                  if (sidebarLikes) {
+                    sidebarLikes.textContent = threadData.likes.length;
+                  }
+                },
+              );
+            });
 
             apiCall(`/comments?threadId=${threadId}`, "GET", null, token)
               .then((comments) => {
