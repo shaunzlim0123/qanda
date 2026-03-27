@@ -32,6 +32,26 @@
   --ease: 150ms ease;
 }
 
+[data-theme="dark"] {
+  --color-primary: #6b92b8;
+  --color-primary-dark: #8bb0d0;
+  --color-primary-light: #1a2535;
+  --color-accent: #e8876e;
+  --color-accent-dark: #f09980;
+  --color-bg: #111317;
+  --color-surface: #1a1d24;
+  --color-text: #e4e4e7;
+  --color-text-muted: #9ca3af;
+  --color-border: #2a2d34;
+  --color-error: #ef4444;
+  --color-error-bg: #2d1619;
+  --color-error-border: #7f1d1d;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
 *,
 *::before,
 *::after {
@@ -1326,11 +1346,12 @@ main > section > nav a:hover {
     padding: 24px 19px;
   }
   #dashboard-container > header {
-    padding: 0 12px 0 0;
+    gap: 12px;
+    padding: 0 16px 0 0;
   }
   .header-left {
-    width: 280px;
-    padding: 0 14px;
+    width: 260px;
+    padding: 0 16px;
   }
   #create-thread-button {
     font-size: 0.8rem;
@@ -1424,12 +1445,12 @@ main > section > nav a:hover {
   }
 
   #dashboard-container > header {
-    gap: 5px;
-    padding: 0 14px 0 0;
+    gap: 6px;
+    padding: 0 8px 0 0;
   }
 
   .header-left {
-    padding: 0 14px;
+    padding: 0 8px;
   }
 
   .brand-text {
@@ -1441,6 +1462,21 @@ main > section > nav a:hover {
   #logout-button {
     font-size: 0.78rem;
     padding: 7px 12px;
+  }
+
+  #theme-toggle {
+    width: 38px;
+    height: 20px;
+    border-radius: 10px;
+  }
+
+  #theme-toggle::after {
+    width: 14px;
+    height: 14px;
+  }
+
+  [data-theme="dark"] #theme-toggle::after {
+    transform: translateX(18px);
   }
 
   #thread-list-container {
