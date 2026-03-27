@@ -11,6 +11,21 @@ import {
 } from "./notifications.js";
 import { updateHash, parseHash, getCurrentUserId } from "./helpers.js";
 
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || "light";
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem("theme", next);
+}
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", (e) => {
+    if (!localStorage.getItem("theme")) {
+      document.documentElement.dataset.theme = e.matches ? "dark" : "light";
+    }
+  });
+
 // app state shared across pages
 const app = {
   main: document.querySelector("main"),
@@ -152,6 +167,12 @@ function renderAuthenticatedLayout(page, data) {
     const token = localStorage.getItem("token");
     navigateTo("profile", getCurrentUserId(token));
   });
+  const themeBtn = document.createElement("button");
+  themeBtn.id = "theme-toggle";
+  themeBtn.type = "button";
+  themeBtn.addEventListener("click", toggleTheme);
+  header.appendChild(themeBtn);
+
   header.appendChild(myProfile);
 
   const logoutBtn = document.createElement("button");
