@@ -86,6 +86,8 @@ function renderContentPage(page, data) {
 function navigateTo(page, data) {
   if (page === "thread" || page === "profile") {
     updateHash(page, data);
+  } else {
+    history.replaceState(null, "", window.location.pathname);
   }
 
   if (

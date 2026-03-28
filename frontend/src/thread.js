@@ -37,6 +37,10 @@ export function renderCreateThreadPage(app) {
     const title = document.getElementById("create-thread-title").value;
     const isPublic = !document.getElementById("create-thread-private").checked;
     const content = document.getElementById("create-thread-body").value;
+    if (!title.trim()) {
+      printErrorMessage("Title cannot be empty.", section);
+      return;
+    }
     apiCall("/thread", "POST", { title, isPublic, content }, token)
       .then((data) => {
         app.navigateTo("thread", data.id);
@@ -620,6 +624,11 @@ function showEditThreadModal(threadId, app) {
     const isPublic = !document.getElementById("edit-thread-private").checked;
     const content = document.getElementById("edit-thread-body").value;
     const lock = document.getElementById("edit-thread-locked").checked;
+
+    if (!title.trim()) {
+      printErrorMessage("Title cannot be empty.", modal);
+      return;
+    }
 
     apiCall(
       "/thread",

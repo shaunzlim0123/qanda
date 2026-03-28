@@ -22,7 +22,7 @@ export function renderLoginPage(app) {
   button.addEventListener("click", () => {
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
-    if (!email || !password) {
+    if (!email.trim() || !password.trim()) {
       printErrorMessage("Please fill in all fields.", section);
       return;
     }
@@ -89,7 +89,7 @@ export function renderRegisterPage(app) {
       "register-confirm-password",
     ).value;
 
-    if (!email || !name || !password || !confirmPassword) {
+    if (!email.trim() || !name.trim() || !password.trim() || !confirmPassword.trim()) {
       printErrorMessage("Please fill in all fields.", section);
       return;
     }

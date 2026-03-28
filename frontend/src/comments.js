@@ -196,11 +196,18 @@ export function renderComments(threadId, container, isLocked, app) {
           submitBtn.type = "button";
           submitBtn.textContent = "Comment";
 
-          container.appendChild(commentText);
-          container.appendChild(submitBtn);
+          commentList.appendChild(commentText);
+          commentList.appendChild(submitBtn);
 
           submitBtn.addEventListener("click", () => {
             const content = commentText.value;
+            if (!content.trim()) {
+              printErrorMessage(
+                "Comment cannot be empty.",
+                submitBtn.parentElement,
+              );
+              return;
+            }
             apiCall(
               "/comment",
               "POST",
@@ -243,6 +250,10 @@ function showReplyModal(threadId, parentCommentId, container, isLocked, app) {
 
   submitBtn.addEventListener("click", () => {
     const content = replyText.value;
+    if (!content.trim()) {
+      printErrorMessage("Comment cannot be empty.", modal);
+      return;
+    }
     apiCall("/comment", "POST", { content, threadId, parentCommentId }, token)
       .then(() => {
         backdrop.remove();
@@ -292,6 +303,10 @@ function showEditCommentModal(comment, threadId, container, isLocked, app) {
 
   submitBtn.addEventListener("click", () => {
     const content = editText.value;
+    if (!content.trim()) {
+      printErrorMessage("Comment cannot be empty.", modal);
+      return;
+    }
     apiCall("/comment", "PUT", { id: comment.id, content }, token)
       .then(() => {
         backdrop.remove();
