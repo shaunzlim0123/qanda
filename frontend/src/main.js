@@ -181,6 +181,7 @@ function renderAuthenticatedLayout(page, data) {
   logoutBtn.textContent = "Logout";
   logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("token");
+    history.replaceState(null, "", window.location.pathname);
     navigateTo("login");
   });
   header.appendChild(logoutBtn);
