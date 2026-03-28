@@ -22,6 +22,10 @@ export function renderLoginPage(app) {
   button.addEventListener("click", () => {
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
+    if (!email || !password) {
+      printErrorMessage("Please fill in all fields.", section);
+      return;
+    }
     apiCall("/auth/login", "POST", { email, password })
       .then((data) => {
         localStorage.setItem("token", data.token);
@@ -78,18 +82,23 @@ export function renderRegisterPage(app) {
   button.type = "button";
   button.textContent = "Register";
   button.addEventListener("click", () => {
+    const email = document.getElementById("register-email").value;
+    const name = document.getElementById("register-name").value;
     const password = document.getElementById("register-password").value;
     const confirmPassword = document.getElementById(
       "register-confirm-password",
     ).value;
+
+    if (!email || !name || !password || !confirmPassword) {
+      printErrorMessage("Please fill in all fields.", section);
+      return;
+    }
 
     if (password !== confirmPassword) {
       printErrorMessage("Passwords do not match.", section);
       return;
     }
 
-    const email = document.getElementById("register-email").value;
-    const name = document.getElementById("register-name").value;
     apiCall("/auth/register", "POST", { email, password, name })
       .then((data) => {
         localStorage.setItem("token", data.token);
