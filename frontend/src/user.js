@@ -6,6 +6,15 @@ import {
   getCurrentUserId,
 } from "./helpers.js";
 
+/**
+ * Renders a user's profile page showing their name, email, avatar, and
+ * a list of threads they have created. If the viewer is the profile owner,
+ * an "Update Profile" button is shown. If the viewer is an admin, a
+ * permission dropdown allows promoting/demoting the user.
+ * @param {number} userId The ID of the user whose profile to display.
+ * @param {HTMLElement} content The content area to render into.
+ * @param {object} app Shared application state.
+ */
 export const renderProfileContent = (userId, content, app) => {
   const container = document.createElement("section");
   container.id = "profile-container";
@@ -151,6 +160,13 @@ export const renderProfileContent = (userId, content, app) => {
     });
 }
 
+/**
+ * Opens a modal for editing the current user's profile (email, password,
+ * name, avatar). Only sends fields that differ from the original values
+ * to avoid unnecessary API updates.
+ * @param {number} userId The ID of the user being edited.
+ * @param {object} app Shared application state.
+ */
 const showEditProfileModal = (userId, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
@@ -188,6 +204,7 @@ const showEditProfileModal = (userId, app) => {
 
     imagePromise
       .then((image) => {
+        // Only include fields that changed from the original values
         const body = {};
         if (email && email !== modal.dataset.originalEmail) body.email = email;
         if (name && name !== modal.dataset.originalName) body.name = name;

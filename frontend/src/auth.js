@@ -1,5 +1,10 @@
 import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
 
+/**
+ * Renders the login page with email/password form and a link to register.
+ * On successful login, stores the JWT token and navigates to the dashboard.
+ * @param {object} app Shared application state.
+ */
 export const renderLoginPage = (app) => {
   const section = document.createElement("section");
 
@@ -54,6 +59,12 @@ export const renderLoginPage = (app) => {
   app.main.appendChild(section);
 }
 
+/**
+ * Renders the registration page with email, name, password, and confirm
+ * password fields. Validates that passwords match before submitting.
+ * On success, stores the JWT token and navigates to the dashboard.
+ * @param {object} app Shared application state.
+ */
 export const renderRegisterPage = (app) => {
   const section = document.createElement("section");
 
