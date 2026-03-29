@@ -5,6 +5,16 @@ import {
   formatTimeSince,
 } from "./helpers.js";
 
+/**
+ * Fetches and renders all comments for a thread as a nested tree.
+ * Top-level comments are sorted newest-first, replies oldest-first.
+ * Includes like, reply, and edit actions. Hides interactive controls
+ * when the thread is locked. Caches comments for offline access.
+ * @param {number} threadId The thread whose comments to render.
+ * @param {HTMLElement} container The element to append the comment list to.
+ * @param {boolean} isLocked Whether the thread is locked (disables replies).
+ * @param {object} app Shared application state.
+ */
 export const renderComments = (threadId, container, isLocked, app) => {
   const commentList = document.createElement("section");
   commentList.id = "comment-list-container";
@@ -232,6 +242,15 @@ export const renderComments = (threadId, container, isLocked, app) => {
     });
 }
 
+/**
+ * Opens a modal for replying to a specific comment. On submit, posts
+ * the reply and re-renders the full comment tree to reflect the new reply.
+ * @param {number} threadId The thread the comment belongs to.
+ * @param {number} parentCommentId The ID of the comment being replied to.
+ * @param {HTMLElement} container The thread container for re-rendering.
+ * @param {boolean} isLocked Whether the thread is locked.
+ * @param {object} app Shared application state.
+ */
 const showReplyModal = (threadId, parentCommentId, container, isLocked, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
@@ -284,6 +303,15 @@ const showReplyModal = (threadId, parentCommentId, container, isLocked, app) => 
   document.body.appendChild(backdrop);
 }
 
+/**
+ * Opens a modal pre-populated with the comment's content for editing.
+ * On submit, updates the comment via the API and re-renders the comment tree.
+ * @param {object} comment The comment object to edit.
+ * @param {number} threadId The thread the comment belongs to.
+ * @param {HTMLElement} container The thread container for re-rendering.
+ * @param {boolean} isLocked Whether the thread is locked.
+ * @param {object} app Shared application state.
+ */
 const showEditCommentModal = (comment, threadId, container, isLocked, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");

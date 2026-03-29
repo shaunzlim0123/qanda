@@ -16,8 +16,9 @@ const toggleTheme = () => {
   const next = current === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;
   localStorage.setItem("theme", next);
-}
+};
 
+// Sync theme with OS preference changes, but only if the user hasn't manually toggled
 window
   .matchMedia("(prefers-color-scheme: dark)")
   .addEventListener("change", (e) => {
@@ -46,7 +47,7 @@ const clearMain = () => {
   while (app.main.firstChild) {
     app.main.removeChild(app.main.firstChild);
   }
-}
+};
 
 const clearContent = () => {
   if (app.pollInterval) {
@@ -56,12 +57,13 @@ const clearContent = () => {
   while (app.contentArea.firstChild) {
     app.contentArea.removeChild(app.contentArea.firstChild);
   }
-}
+};
 
 const isMobile = () => {
   return window.matchMedia("(max-width: 480px)").matches;
-}
+};
 
+/** Toggles the sidebar/content visibility on mobile based on the current page. */
 const updateMobileView = (page) => {
   const wrapper = document.getElementById("dashboard-container");
   if (!wrapper) return;
@@ -70,7 +72,7 @@ const updateMobileView = (page) => {
   } else {
     wrapper.classList.remove("viewing-content");
   }
-}
+};
 
 const renderContentPage = (page, data) => {
   updateMobileView(page);
@@ -81,8 +83,15 @@ const renderContentPage = (page, data) => {
   } else if (page === "profile") {
     renderProfileContent(data, app.contentArea, app);
   }
-}
+};
 
+/**
+ * Central router for the SPA. Updates the URL hash, clears stale content,
+ * and delegates to the appropriate page renderer. If the authenticated
+ * layout is already mounted, only the content area is swapped.
+ * @param {string} page Page to navigate to (login, register, dashboard, thread, profile, create-thread).
+ * @param {*} data Page-specific data (thread ID, user ID, etc.).
+ */
 const navigateTo = (page, data) => {
   if (page === "thread" || page === "profile") {
     updateHash(page, data);
@@ -116,7 +125,8 @@ const navigateTo = (page, data) => {
     app.lastData = data;
     renderAuthenticatedLayout(page, data);
   }
-}
+};
+// Expose navigateTo on the app object so other modules can trigger navigation
 app.navigateTo = navigateTo;
 
 window.addEventListener("hashchange", () => {
@@ -124,6 +134,12 @@ window.addEventListener("hashchange", () => {
   if (parsed) navigateTo(parsed.page, parsed.data);
 });
 
+/**
+ * Builds the authenticated shell (header with nav buttons, sidebar with
+ * thread list, and content area) and starts notification polling.
+ * @param {string} page Initial page to render in the content area.
+ * @param {*} data Page-specific data for the initial render.
+ */
 const renderAuthenticatedLayout = (page, data) => {
   const wrapper = document.createElement("div");
   wrapper.id = "dashboard-container";
@@ -209,8 +225,9 @@ const renderAuthenticatedLayout = (page, data) => {
   app.main.appendChild(wrapper);
 
   startNotificationPolling(app);
-}
+};
 
+/** Renders the default dashboard placeholder prompting the user to select a thread. */
 const renderDashboardContent = (content) => {
   const placeholder = document.createElement("div");
   placeholder.classList.add("dashboard-placeholder");
@@ -220,7 +237,7 @@ const renderDashboardContent = (content) => {
   placeholder.appendChild(msg);
 
   content.appendChild(placeholder);
-}
+};
 
 // Bootstrap — check URL hash first, then fall back to defaults
 if (localStorage.getItem("token")) {

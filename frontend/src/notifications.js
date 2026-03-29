@@ -1,22 +1,30 @@
 import { apiCall, getCurrentUserId } from "./helpers.js";
 
+/**
+ * Starts polling for new comments on the user's watched threads every 3 seconds.
+ * The first poll seeds the comment counts without triggering notifications.
+ * @param {object} app Shared application state.
+ */
 export const startNotificationPolling = (app) => {
   seeded = false;
   Object.keys(commentCounts).forEach((k) => delete commentCounts[k]);
 
   pollWatchedThreads(app);
   app.notifyInterval = setInterval(() => pollWatchedThreads(app), 3000);
-}
+};
 
+/**
+ * Stops the notification polling interval started by startNotificationPolling.
+ * @param {object} app Shared application state.
+ */
 export const stopNotificationPolling = (app) => {
   if (app.notifyInterval) {
     clearInterval(app.notifyInterval);
     app.notifyInterval = null;
   }
-}
+};
 
 // Snapshot of comment counts per watched thread
-// on the first poll we seed this without firing notifications
 const commentCounts = {};
 let seeded = false;
 
@@ -28,8 +36,15 @@ const ensurePingContainer = () => {
     pingContainer.id = "ping-container";
     document.body.appendChild(pingContainer);
   }
-}
+};
 
+/**
+ * Displays a toast notification for a new comment on a watched thread.
+ * Clicking the toast navigates to the thread. Auto-dismisses after 10 seconds.
+ * @param {string} threadTitle Title of the thread with new activity.
+ * @param {number} threadId ID of the thread to navigate to on click.
+ * @param {object} app Shared application state.
+ */
 const showPing = (threadTitle, threadId, app) => {
   ensurePingContainer();
 
@@ -75,8 +90,14 @@ const showPing = (threadTitle, threadId, app) => {
   setTimeout(() => {
     if (ping.parentNode) ping.remove();
   }, 10000);
-}
+};
 
+/**
+ * Fetches comment counts for all threads the user is watching and compares
+ * them to the previous snapshot. Triggers a toast notification when a
+ * thread's comment count increases (ignores decreases from deletions).
+ * @param {object} app Shared application state.
+ */
 const pollWatchedThreads = (app) => {
   if (!navigator.onLine) return;
   const token = localStorage.getItem("token");
@@ -118,4 +139,4 @@ const pollWatchedThreads = (app) => {
       });
     })
     .catch(() => {});
-}
+};
