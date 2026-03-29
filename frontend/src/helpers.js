@@ -29,9 +29,17 @@ export const fileToDataUrl = (file) => {
   });
   reader.readAsDataURL(file);
   return dataUrlPromise;
-}
+};
 
-// API CALL helper function
+/**
+ * Makes an authenticated API request to the backend and returns parsed JSON.
+ * Rejects with the server error message on failure or if the user is offline.
+ * @param {string} path API endpoint path (e.g. "/thread").
+ * @param {string} method HTTP method (GET, POST, PUT, DELETE).
+ * @param {object|null} body Request body (ignored for GET).
+ * @param {string} [token] JWT auth token from localStorage.
+ * @return {Promise<object>} Parsed JSON response data.
+ */
 export const apiCall = (path, method, body, token) => {
   const headers = {
     "Content-Type": "application/json",
@@ -60,6 +68,13 @@ export const apiCall = (path, method, body, token) => {
     });
 };
 
+/**
+ * Creates a labeled input element wrapped in a container div.
+ * @param {string} type Input type (text, password, checkbox, file, etc.).
+ * @param {string} id ID attribute for the input (also used by the label's "for").
+ * @param {string} labelText Text content for the label.
+ * @return {HTMLDivElement} Container div holding the label and input.
+ */
 export const createLabeledInput = (type, id, labelText) => {
   const container = document.createElement("div");
   if (type === "checkbox") container.classList.add("checkbox-group");
@@ -75,8 +90,14 @@ export const createLabeledInput = (type, id, labelText) => {
   container.appendChild(label);
   container.appendChild(input);
   return container;
-}
+};
 
+/**
+ * Displays a dismissible error banner inside the given parent element.
+ * Removes any existing error banner first so only one is shown at a time.
+ * @param {string} message The error text to display.
+ * @param {HTMLElement} parentElement The element to append the error banner to.
+ */
 export const printErrorMessage = (message, parentElement) => {
   const existing = document.getElementById("error-container");
   if (existing) existing.remove();
@@ -97,11 +118,11 @@ export const printErrorMessage = (message, parentElement) => {
   errorContainer.appendChild(errorMsg);
   errorContainer.appendChild(errorClose);
   parentElement.appendChild(errorContainer);
-}
+};
 
 export const getCurrentUserId = (token) => {
   return Number(JSON.parse(atob(token.split(".")[1])).userId);
-}
+};
 
 export const formatTimeSince = (createdAt) => {
   const time = Math.floor((Date.now() - new Date(createdAt)) / 1000);
@@ -110,8 +131,15 @@ export const formatTimeSince = (createdAt) => {
   if (time < 86400) return `${Math.floor(time / 3600)} hour(s) ago`;
   if (time < 604800) return `${Math.floor(time / 86400)} day(s) ago`;
   return `${Math.floor(time / 604800)} week(s) ago`;
-}
+};
 
+/**
+ * Updates the URL hash to reflect the current page and data so that
+ * the user can bookmark or share the link. Skips the update if the
+ * hash is already correct to avoid triggering an infinite hashchange loop.
+ * @param {string} page The current page name ("thread" or "profile").
+ * @param {*} data Page-specific data (thread ID or user ID).
+ */
 export const updateHash = (page, data) => {
   let hash = "";
   if (page === "thread" && data) {
@@ -122,8 +150,13 @@ export const updateHash = (page, data) => {
   }
   // prevent infinite loop of updating hash
   if (location.hash !== hash) location.hash = hash;
-}
+};
 
+/**
+ * Parses the current URL hash and returns the corresponding page and data.
+ * Supports formats: #thread=<id>, #profile=<id>, and #profile (own profile).
+ * @return {{ page: string, data: number } | null} Parsed route or null if unrecognised.
+ */
 export const parseHash = () => {
   const hash = location.hash;
   if (hash.startsWith("#thread=")) {
@@ -136,4 +169,4 @@ export const parseHash = () => {
     return { page: "profile", data: getCurrentUserId(token) };
   }
   return null;
-}
+};

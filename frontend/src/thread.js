@@ -7,6 +7,11 @@ import {
 } from "./helpers.js";
 import { renderComments } from "./comments.js";
 
+/**
+ * Renders a full-page form for creating a new thread with title, body,
+ * and a private/public toggle. Navigates to the new thread on success.
+ * @param {object} app Shared application state.
+ */
 export const renderCreateThreadPage = (app) => {
   const section = document.createElement("section");
 
@@ -62,6 +67,13 @@ export const renderCreateThreadPage = (app) => {
   app.main.appendChild(section);
 }
 
+/**
+ * Populates the sidebar with a scrollable list of thread previews.
+ * Fetches threads in batches of 5 and supports infinite scroll to load more.
+ * Falls back to a single cached thread when offline.
+ * @param {HTMLElement} sidebar The sidebar element to populate.
+ * @param {object} app Shared application state.
+ */
 export const renderThreadList = (sidebar, app) => {
   // Offline: show only the cached thread in sidebar
   if (!navigator.onLine) {
@@ -169,6 +181,14 @@ export const renderThreadList = (sidebar, app) => {
   });
 }
 
+/**
+ * Renders the full thread view including title, author, body, like/watch/
+ * edit/delete actions, and comments. Sets up a 2-second polling interval
+ * to live-update likes and comments. Falls back to cached data when offline.
+ * @param {number} threadId The ID of the thread to display.
+ * @param {HTMLElement} content The content area to render into.
+ * @param {object} app Shared application state.
+ */
 export const renderThreadContent = (threadId, content, app) => {
   const container = document.createElement("article");
   container.id = "thread-container";
@@ -257,6 +277,8 @@ export const renderThreadContent = (threadId, content, app) => {
             const isLiked = thread.likes.includes(Number(currentUserId));
             if (isLiked) likeBtn.classList.add("liked");
 
+            // Optimistic UI: toggle like state immediately, then send API
+            // request. If the request fails, roll back the UI to its previous state.
             likeBtn.addEventListener("click", () => {
               likeBtn.classList.toggle("liked");
 
@@ -449,6 +471,14 @@ export const renderThreadContent = (threadId, content, app) => {
   content.appendChild(container);
 }
 
+/**
+ * Creates a clickable thread preview card for the sidebar list, showing
+ * the title, date, author name, and like count.
+ * @param {object} thread Thread data from the API.
+ * @param {string} authorName Display name of the thread creator.
+ * @param {number} threadId The thread's ID (stored as a data attribute).
+ * @return {HTMLElement} The thread preview card element.
+ */
 const createThreadListItem = (thread, authorName, threadId) => {
   const threadBox = document.createElement("article");
   threadBox.classList.add("list-thread-container");
@@ -478,6 +508,11 @@ const createThreadListItem = (thread, authorName, threadId) => {
   return threadBox;
 }
 
+/**
+ * Renders a read-only view of a thread from localStorage cache when the
+ * user is offline. Includes an offline banner and cached comments if available.
+ * @param {HTMLElement} container The element to render the cached thread into.
+ */
 const renderCachedThread = (container) => {
   const cached = localStorage.getItem("cachedThread");
   if (!cached) {
@@ -589,6 +624,13 @@ const renderCachedThread = (container) => {
   topLevel.forEach((comment) => renderComment(comment, commentList));
 }
 
+/**
+ * Opens a modal dialog pre-populated with the thread's current data,
+ * allowing the user to edit the title, body, privacy, and lock status.
+ * Updates the sidebar title and privacy badge on save.
+ * @param {number} threadId The ID of the thread to edit.
+ * @param {object} app Shared application state.
+ */
 const showEditThreadModal = (threadId, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
@@ -683,6 +725,12 @@ const showEditThreadModal = (threadId, app) => {
     });
 }
 
+/**
+ * Opens a confirmation modal before deleting a thread. Calls the
+ * onConfirm callback only if the user clicks "Confirm". Clicking
+ * outside the dialog or pressing "Cancel" dismisses it.
+ * @param {Function} onConfirm Callback to execute on confirmation.
+ */
 const showDeleteConfirmModal = (onConfirm) => {
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");
