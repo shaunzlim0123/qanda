@@ -14,7 +14,7 @@ import { BACKEND_PORT } from "./config.js";
  * @param {File} file The file to be read.
  * @return {Promise<string>} Promise which resolves to the file as a data url.
  */
-export function fileToDataUrl(file) {
+export const fileToDataUrl = (file) => {
   const validFileTypes = ["image/jpeg", "image/png", "image/jpg"];
   const valid = validFileTypes.find((type) => type === file.type);
   // Bad data, let's walk away.
@@ -60,7 +60,7 @@ export const apiCall = (path, method, body, token) => {
     });
 };
 
-export function createLabeledInput(type, id, labelText) {
+export const createLabeledInput = (type, id, labelText) => {
   const container = document.createElement("div");
   if (type === "checkbox") container.classList.add("checkbox-group");
 
@@ -77,7 +77,7 @@ export function createLabeledInput(type, id, labelText) {
   return container;
 }
 
-export function printErrorMessage(message, parentElement) {
+export const printErrorMessage = (message, parentElement) => {
   const existing = document.getElementById("error-container");
   if (existing) existing.remove();
 
@@ -99,11 +99,11 @@ export function printErrorMessage(message, parentElement) {
   parentElement.appendChild(errorContainer);
 }
 
-export function getCurrentUserId(token) {
+export const getCurrentUserId = (token) => {
   return Number(JSON.parse(atob(token.split(".")[1])).userId);
 }
 
-export function formatTimeSince(createdAt) {
+export const formatTimeSince = (createdAt) => {
   const time = Math.floor((Date.now() - new Date(createdAt)) / 1000);
   if (time < 60) return "Just now";
   if (time < 3600) return `${Math.floor(time / 60)} minute(s) ago`;
@@ -112,7 +112,7 @@ export function formatTimeSince(createdAt) {
   return `${Math.floor(time / 604800)} week(s) ago`;
 }
 
-export function updateHash(page, data) {
+export const updateHash = (page, data) => {
   let hash = "";
   if (page === "thread" && data) {
     hash = `#thread=${data}`;
@@ -124,7 +124,7 @@ export function updateHash(page, data) {
   if (location.hash !== hash) location.hash = hash;
 }
 
-export function parseHash() {
+export const parseHash = () => {
   const hash = location.hash;
   if (hash.startsWith("#thread=")) {
     return { page: "thread", data: Number(hash.split("=")[1]) };

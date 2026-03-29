@@ -1,6 +1,6 @@
 import { createLabeledInput, apiCall, printErrorMessage } from "./helpers.js";
 
-export function renderLoginPage(app) {
+export const renderLoginPage = (app) => {
   const section = document.createElement("section");
 
   const heading = document.createElement("h2");
@@ -54,7 +54,7 @@ export function renderLoginPage(app) {
   app.main.appendChild(section);
 }
 
-export function renderRegisterPage(app) {
+export const renderRegisterPage = (app) => {
   const section = document.createElement("section");
 
   const heading = document.createElement("h2");

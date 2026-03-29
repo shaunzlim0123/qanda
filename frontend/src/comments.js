@@ -5,7 +5,7 @@ import {
   formatTimeSince,
 } from "./helpers.js";
 
-export function renderComments(threadId, container, isLocked, app) {
+export const renderComments = (threadId, container, isLocked, app) => {
   const commentList = document.createElement("section");
   commentList.id = "comment-list-container";
   container.appendChild(commentList);
@@ -61,7 +61,7 @@ export function renderComments(threadId, container, isLocked, app) {
         topLevel.sort(sortByNewest);
 
         // Recursively render a comment and its children
-        function renderComment(comment, parentEl) {
+        const renderComment = (comment, parentEl) => {
           const userData = userMap[comment.creatorId];
 
           const commentBox = document.createElement("article");
@@ -232,7 +232,7 @@ export function renderComments(threadId, container, isLocked, app) {
     });
 }
 
-function showReplyModal(threadId, parentCommentId, container, isLocked, app) {
+const showReplyModal = (threadId, parentCommentId, container, isLocked, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");
@@ -284,7 +284,7 @@ function showReplyModal(threadId, parentCommentId, container, isLocked, app) {
   document.body.appendChild(backdrop);
 }
 
-function showEditCommentModal(comment, threadId, container, isLocked, app) {
+const showEditCommentModal = (comment, threadId, container, isLocked, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");

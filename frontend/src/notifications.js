@@ -1,6 +1,6 @@
 import { apiCall, getCurrentUserId } from "./helpers.js";
 
-export function startNotificationPolling(app) {
+export const startNotificationPolling = (app) => {
   seeded = false;
   Object.keys(commentCounts).forEach((k) => delete commentCounts[k]);
 
@@ -8,7 +8,7 @@ export function startNotificationPolling(app) {
   app.notifyInterval = setInterval(() => pollWatchedThreads(app), 3000);
 }
 
-export function stopNotificationPolling(app) {
+export const stopNotificationPolling = (app) => {
   if (app.notifyInterval) {
     clearInterval(app.notifyInterval);
     app.notifyInterval = null;
@@ -22,7 +22,7 @@ let seeded = false;
 
 let pingContainer = null;
 
-function ensurePingContainer() {
+const ensurePingContainer = () => {
   if (!pingContainer) {
     pingContainer = document.createElement("div");
     pingContainer.id = "ping-container";
@@ -30,7 +30,7 @@ function ensurePingContainer() {
   }
 }
 
-function showPing(threadTitle, threadId, app) {
+const showPing = (threadTitle, threadId, app) => {
   ensurePingContainer();
 
   const ping = document.createElement("div");
@@ -77,7 +77,7 @@ function showPing(threadTitle, threadId, app) {
   }, 10000);
 }
 
-function pollWatchedThreads(app) {
+const pollWatchedThreads = (app) => {
   if (!navigator.onLine) return;
   const token = localStorage.getItem("token");
   const currentUserId = getCurrentUserId(token);

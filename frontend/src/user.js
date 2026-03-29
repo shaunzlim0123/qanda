@@ -6,7 +6,7 @@ import {
   getCurrentUserId,
 } from "./helpers.js";
 
-export function renderProfileContent(userId, content, app) {
+export const renderProfileContent = (userId, content, app) => {
   const container = document.createElement("section");
   container.id = "profile-container";
   content.appendChild(container);
@@ -91,7 +91,7 @@ export function renderProfileContent(userId, content, app) {
       threadList.id = "profile-thread-list";
       container.appendChild(threadList);
 
-      function loadAllThreads(start) {
+      const loadAllThreads = (start) => {
         apiCall(`/threads?start=${start}`, "GET", null, token)
           .then((threadIds) => {
             const threadPromises = threadIds.map((id) =>
@@ -151,7 +151,7 @@ export function renderProfileContent(userId, content, app) {
     });
 }
 
-function showEditProfileModal(userId, app) {
+const showEditProfileModal = (userId, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");

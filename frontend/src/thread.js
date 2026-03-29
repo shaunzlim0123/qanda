@@ -7,7 +7,7 @@ import {
 } from "./helpers.js";
 import { renderComments } from "./comments.js";
 
-export function renderCreateThreadPage(app) {
+export const renderCreateThreadPage = (app) => {
   const section = document.createElement("section");
 
   const closeBtn = document.createElement("button");
@@ -62,7 +62,7 @@ export function renderCreateThreadPage(app) {
   app.main.appendChild(section);
 }
 
-export function renderThreadList(sidebar, app) {
+export const renderThreadList = (sidebar, app) => {
   // Offline: show only the cached thread in sidebar
   if (!navigator.onLine) {
     const cached = localStorage.getItem("cachedThread");
@@ -88,15 +88,15 @@ export function renderThreadList(sidebar, app) {
   loader.textContent = "Loading...";
   sidebar.appendChild(loader);
 
-  function showLoader() {
+  const showLoader = () => {
     loader.classList.add("visible");
   }
 
-  function hideLoader() {
+  const hideLoader = () => {
     loader.classList.remove("visible");
   }
 
-  function loadThreads() {
+  const loadThreads = () => {
     if (loading || allLoaded || !navigator.onLine) return;
     loading = true;
     showLoader();
@@ -169,7 +169,7 @@ export function renderThreadList(sidebar, app) {
   });
 }
 
-export function renderThreadContent(threadId, content, app) {
+export const renderThreadContent = (threadId, content, app) => {
   const container = document.createElement("article");
   container.id = "thread-container";
 
@@ -449,7 +449,7 @@ export function renderThreadContent(threadId, content, app) {
   content.appendChild(container);
 }
 
-function createThreadListItem(thread, authorName, threadId) {
+const createThreadListItem = (thread, authorName, threadId) => {
   const threadBox = document.createElement("article");
   threadBox.classList.add("list-thread-container");
   threadBox.dataset.threadId = threadId;
@@ -478,7 +478,7 @@ function createThreadListItem(thread, authorName, threadId) {
   return threadBox;
 }
 
-function renderCachedThread(container) {
+const renderCachedThread = (container) => {
   const cached = localStorage.getItem("cachedThread");
   if (!cached) {
     printErrorMessage(
@@ -546,7 +546,7 @@ function renderCachedThread(container) {
   const sortByOldest = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
   topLevel.sort(sortByNewest);
 
-  function renderComment(comment, parent) {
+  const renderComment = (comment, parent) => {
     const user = userMap[comment.creatorId] || { name: "Unknown", image: "" };
     const box = document.createElement("article");
     box.classList.add("list-comment-container");
@@ -589,7 +589,7 @@ function renderCachedThread(container) {
   topLevel.forEach((comment) => renderComment(comment, commentList));
 }
 
-function showEditThreadModal(threadId, app) {
+const showEditThreadModal = (threadId, app) => {
   const token = localStorage.getItem("token");
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");
@@ -683,7 +683,7 @@ function showEditThreadModal(threadId, app) {
     });
 }
 
-function showDeleteConfirmModal(onConfirm) {
+const showDeleteConfirmModal = (onConfirm) => {
   const backdrop = document.createElement("div");
   backdrop.classList.add("modal-backdrop");
 

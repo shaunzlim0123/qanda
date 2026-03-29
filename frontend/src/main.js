@@ -11,7 +11,7 @@ import {
 } from "./notifications.js";
 import { updateHash, parseHash, getCurrentUserId } from "./helpers.js";
 
-function toggleTheme() {
+const toggleTheme = () => {
   const current = document.documentElement.dataset.theme || "light";
   const next = current === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;
@@ -37,7 +37,7 @@ const app = {
   pollInterval: null,
 };
 
-function clearMain() {
+const clearMain = () => {
   if (app.pollInterval) {
     clearInterval(app.pollInterval);
     app.pollInterval = null;
@@ -48,7 +48,7 @@ function clearMain() {
   }
 }
 
-function clearContent() {
+const clearContent = () => {
   if (app.pollInterval) {
     clearInterval(app.pollInterval);
     app.pollInterval = null;
@@ -58,11 +58,11 @@ function clearContent() {
   }
 }
 
-function isMobile() {
+const isMobile = () => {
   return window.matchMedia("(max-width: 480px)").matches;
 }
 
-function updateMobileView(page) {
+const updateMobileView = (page) => {
   const wrapper = document.getElementById("dashboard-container");
   if (!wrapper) return;
   if (isMobile() && page !== "dashboard") {
@@ -72,7 +72,7 @@ function updateMobileView(page) {
   }
 }
 
-function renderContentPage(page, data) {
+const renderContentPage = (page, data) => {
   updateMobileView(page);
   if (page === "dashboard") {
     renderDashboardContent(app.contentArea);
@@ -83,7 +83,7 @@ function renderContentPage(page, data) {
   }
 }
 
-function navigateTo(page, data) {
+const navigateTo = (page, data) => {
   if (page === "thread" || page === "profile") {
     updateHash(page, data);
   } else {
@@ -124,7 +124,7 @@ window.addEventListener("hashchange", () => {
   if (parsed) navigateTo(parsed.page, parsed.data);
 });
 
-function renderAuthenticatedLayout(page, data) {
+const renderAuthenticatedLayout = (page, data) => {
   const wrapper = document.createElement("div");
   wrapper.id = "dashboard-container";
 
@@ -211,7 +211,7 @@ function renderAuthenticatedLayout(page, data) {
   startNotificationPolling(app);
 }
 
-function renderDashboardContent(content) {
+const renderDashboardContent = (content) => {
   const placeholder = document.createElement("div");
   placeholder.classList.add("dashboard-placeholder");
 
