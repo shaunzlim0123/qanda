@@ -59,7 +59,7 @@ frontend/
 | Pattern                      | Where                                      | Purpose                                                                            |
 | ---------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------- |
 | **Factory Functions**        | Every `render*()` function                 | Compose DOM subtrees with encapsulated event listeners and local state             |
-| **Centralised State Object** | `app` in `main.js`                         | Single source of truth passed between modules, avoids globals, enables cleanup      |
+| **Centralised State Object** | `app` in `main.js`                         | Single source of truth passed between modules, avoids globals, enables cleanup     |
 | **Module Pattern**           | ES module boundaries                       | Each file encapsulates a domain; only public render/utility functions are exported |
 | **Event Delegation**         | Scroll listeners, modal overlays           | Efficient DOM event handling without per-element binding                           |
 | **State Diffing**            | Polling in `thread.js`, `notifications.js` | Compare server state against last-known state to avoid unnecessary re-renders      |
@@ -68,15 +68,15 @@ frontend/
 
 ## Tech Stack
 
-| Layer             | Technology                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------- |
-| Language          | Vanilla JavaScript (ES6+ modules, arrow functions, async/await, destructuring)                |
-| Markup            | HTML5 (semantic elements, `data-*` attributes, `<dialog>`-style modals)                       |
-| Styling           | CSS3 with custom properties, Flexbox, Grid, media queries, `data-theme` dark mode             |
-| API Communication | Fetch API with Bearer token auth, offline detection, centralised error handling               |
-| Authentication    | JWT tokens stored in `localStorage`, decoded client-side via `atob()` for user ID extraction  |
-| Persistence       | `localStorage` for session tokens, theme preference, offline thread/comment cache             |
-| Backend           | Node.js / Express REST API (separate repository)                                              |
+| Layer             | Technology                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Language          | Vanilla JavaScript (ES6+ modules, arrow functions, async/await, destructuring)               |
+| Markup            | HTML5 (semantic elements, `data-*` attributes, `<dialog>`-style modals)                      |
+| Styling           | CSS3 with custom properties, Flexbox, Grid, media queries, `data-theme` dark mode            |
+| API Communication | Fetch API with Bearer token auth, offline detection, centralised error handling              |
+| Authentication    | JWT tokens stored in `localStorage`, decoded client-side via `atob()` for user ID extraction |
+| Persistence       | `localStorage` for session tokens, theme preference, offline thread/comment cache            |
+| Backend           | Node.js / Express REST API (separate repository)                                             |
 
 ---
 
@@ -97,6 +97,8 @@ cd qanda
 # 3. Open in browser, no build step required
 open frontend/index.html
 # Or use a local server: npx serve frontend
+npm install --global http-server
+npx http-server frontend [port] # typically 8080
 ```
 
 > **Note**: The backend must be running on port `5005` for API calls to connect. Update `frontend/src/config.js` if your backend runs on a different port.
